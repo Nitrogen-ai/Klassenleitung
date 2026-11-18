@@ -1,0 +1,81 @@
+{
+  "schule": "Rosa-Luxemburg-Gymnasium",
+  "klasse": "9.1",
+  "motto": "Im Gleichgewicht: miteinander digital gerecht",
+  "grundregeln_titel": "Grundregeln im Umgang mit Tablets am Rosa-Luxemburg-Gymnasium",
+  "grundregeln": [
+    {
+      "icon": "school",
+      "kurz": "Nur für die Schule",
+      "text": "Das Tablet werde ich in der Schule nur für schulische Zwecke einsetzen und es im Unterricht nur dann gebrauchen, wenn es mir die Lehrkraft erlaubt."
+    },
+    {
+      "icon": "battery",
+      "kurz": "Immer einsatzbereit",
+      "text": "Ich bin dafür verantwortlich, dass das Tablet einsatzbereit ist. Dies betrifft insbesondere den Akkuladestand und den Speicherplatz. Zur Sicherheit habe ich mein Ladegerät stets dabei."
+    },
+    {
+      "icon": "camera",
+      "kurz": "Aufnahmen nur mit Erlaubnis",
+      "text": "Bild-, Ton- und Videoaufnahmen von anderen Personen werde ich nur mit deren ausdrücklichem Einverständnis machen. Im Unterricht benötige ich für Bild-, Ton- und Videoaufnahmen die ausdrückliche Erlaubnis der Lehrkraft."
+    },
+    {
+      "icon": "shield",
+      "kurz": "Sicher verwahrt",
+      "text": "Ich habe selbst dafür Sorge zu tragen, dass mein Tablet in der Pause sorgfältig und sicher verwahrt wird. Das Tablet verbleibt in der Hülle. Meine Schule übernimmt keine Haftung für Verlust oder Beschädigungen."
+    }
+  ],
+  "verpflichtung": "Hiermit verpflichte ich mich, die oben genannten Grundregeln für den Umgang mit dem Tablet einzuhalten. Verstöße gegen die Grundregeln können unter anderem zu folgenden Konsequenzen führen: Internetsperre des Geräts, Sperre einzelner Apps bis hin zu einem temporären Einzug des Geräts.",
+  "klassenregeln": [
+    {
+      "icon": "heart",
+      "titel": "Würde und Respekt, auch digital",
+      "text": "Die Würde des Menschen ist unantastbar. Cybermobbing ist bei uns tabu: keine abwertenden Kommentare, Fotos oder Nachrichten über Mitschüler:innen. Auch „Mitmachen“ (weiterleiten, liken, kommentieren) zählt dazu und kann strafbar sein.",
+      "bezug": "3"
+    },
+    {
+      "icon": "camera",
+      "titel": "Fotos nur mit ausdrücklicher Erlaubnis",
+      "text": "Ich mache Aufnahmen von anderen nur, wenn sie ausdrücklich zugestimmt haben, und gebe sie nur mit deren Zustimmung weiter. Im Unterricht entscheidet zusätzlich die Lehrkraft.",
+      "bezug": "3"
+    },
+    {
+      "icon": "belloff",
+      "titel": "Stumm und „Nicht stören“",
+      "text": "In der Schule sind meine mobilen Geräte stumm geschaltet, „Nicht stören“ ist aktiv und Benachrichtigungen sind aus.",
+      "bezug": "1"
+    },
+    {
+      "icon": "socialoff",
+      "titel": "Kein Social Media in der Schule",
+      "text": "Social Media ist kein schulischer Zweck und lenkt vom Lernen ab. Deshalb bleibt es in der Schule geschlossen.",
+      "bezug": "1"
+    },
+    {
+      "icon": "hourglass",
+      "titel": "Bewusst statt aus Langeweile",
+      "text": "Ich greife nur mit einem konkreten schulischen Grund zum Tablet, nicht aus Langeweile. Ich achte auf meine Bildschirmzeit und nutze Bildschirmzeit-Limits.",
+      "bezug": "1"
+    },
+    {
+      "icon": "people",
+      "titel": "Echte Begegnung",
+      "text": "In der Pause bleibt das Tablet sicher verwahrt. Wir reden und unternehmen etwas miteinander: mindestens eine echte Begegnung pro Tag.",
+      "bezug": "4"
+    },
+    {
+      "icon": "refresh",
+      "titel": "Fair und gemeinsam",
+      "text": "Wir beteiligen alle, finden Kompromisse und nutzen die Klassengemeinschaft nicht aus. Wir erinnern uns gegenseitig freundlich an die Regeln und wiederholen sie regelmäßig im Klassenrat.",
+      "bezug": "1–4"
+    }
+  ],
+  "ziel": ["Spaß", "Lernen", "Zusammenhalt"],
+  "nicht_uebernommen": [
+    {
+      "vorschlag": "„Keine Kontrolle von außen bzw. durch andere Personen (z. B. Lehrkräfte)“",
+      "grund": "widerspricht Grundregel 1 und 3: Ob und wofür das Tablet im Unterricht genutzt wird, entscheidet die Lehrkraft."
+    }
+  ],
+  "hinweis": "Die Grundregeln 1–4 gelten unverändert. Unsere Klassenregeln präzisieren sie, schwächen sie aber nicht ab. Vorschläge, die die Grundregeln umgehen würden, wurden nicht aufgenommen."
+}

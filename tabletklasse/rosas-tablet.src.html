@@ -1,0 +1,1290 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Rosas Tablet</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&display=swap">
+<!--
+  Rosas Tablet · Übungsspiel zum Workshop Tabletklasse (Classroom, Docs/Sheets/Präsentationen, GoodNotes-Werkzeugleiste 1–24)
+  Stil wie Rosas Säurelabor (Chemie 9): Canvas-Klassenzimmer, Rosa läuft zu den Tischen, Comic-Fenster je Tisch, Zertifikat als PDF.
+  Quelle: tabletklasse/rosas-tablet.src.html, Ausgabe rosas-tablet.html via build.py (Screenshot + Regeln eingesetzt).
+  Nie rosas-tablet.html von Hand bearbeiten.
+-->
+<style>
+:root{
+  --ink:#2b1d2e; --paper:#f6eedb; --brass:#d9a441; --brassL:#f2cf6b;
+  --teal:#1f7a72; --tealL:#8fd0d6; --rose:#c8364f; --ok:#3f7a3a; --okL:#dff0d2; --bad:#a3332b; --badL:#f6dcd6;
+  --stageBg:#1a1220; --display:"Baloo 2","Trebuchet MS","Gill Sans",system-ui,sans-serif;
+  --body:"Trebuchet MS","Gill Sans",system-ui,sans-serif; --ts:1; color-scheme:dark
+}
+html,body{margin:0;height:100%;background:var(--stageBg);color:var(--paper);font-family:var(--body);overflow:hidden;-webkit-user-select:none;user-select:none}
+#stage{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);aspect-ratio:16/9;width:min(100vw,calc(100vh*16/9));max-width:100%;max-height:100%;container-type:inline-size;overflow:hidden;background:var(--stageBg)}
+canvas.room{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none}
+.ui{position:absolute;font-size:calc(1.35cqw*var(--ts))}
+button{font:inherit;font-size:1em;color:var(--paper);background:rgba(43,29,46,.88);border:2px solid var(--brass);border-radius:.4em;padding:.25em .6em;cursor:pointer}
+button:hover,button:focus-visible{background:#4a3557;outline:none;border-color:var(--brassL)}
+button:disabled{opacity:.45;cursor:default}
+button[aria-pressed=false]{opacity:.6;text-decoration:line-through}
+#top{left:0;right:0;top:0;display:flex;justify-content:space-between;align-items:flex-start;padding:.6cqw .9cqw;gap:1cqw;pointer-events:none}
+#goal{background:rgba(43,29,46,.8);border:2px solid var(--brass);border-radius:.4em;padding:.3em .7em;max-width:56%;line-height:1.3}
+#goal b{color:var(--brassL)}
+#btns{display:flex;gap:.4cqw;pointer-events:auto;flex-wrap:wrap;justify-content:flex-end}
+#bottom{left:0;right:0;bottom:0;height:6cqw;display:flex;align-items:center;gap:1cqw;padding:0 1.2cqw;background:linear-gradient(transparent,rgba(26,18,32,.9) 45%);pointer-events:none}
+#label{flex:1;min-height:1.4em;text-shadow:0 0 4px #000,0 0 2px #000}
+#label small{opacity:.8}
+.card{inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;background:rgba(26,18,32,.9);gap:1.1cqw;padding:3cqw;box-sizing:border-box}
+.card h1{font-family:var(--display);font-weight:800;font-size:3em;line-height:1;margin:0;color:var(--brassL)}
+.card p{max-width:46em;margin:0;line-height:1.45}
+.card .row{display:flex;gap:1cqw;flex-wrap:wrap;justify-content:center}
+.card button{font-size:1.25em;padding:.4em 1.2em}
+.kicker{font-family:var(--display);font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--tealL);font-size:.95em}
+.names{display:grid;grid-template-columns:1fr 1fr;gap:.4em 1em;width:min(36em,90%);text-align:left}
+.names label{font-weight:bold}
+input[type=text]{font:inherit;width:100%;box-sizing:border-box;border:2px solid var(--ink);border-radius:.35em;padding:.35em .5em;background:#fffdf6;color:var(--ink);-webkit-user-select:text;user-select:text}
+.fn{font-family:Menlo,"Courier New",monospace;font-size:.92em;background:#fff6dc;border:1px dashed var(--brass);border-radius:.25em;padding:0 .3em;white-space:nowrap;color:var(--ink)}
+
+/* ---------- Tischfenster ---------- */
+#st{inset:1.4cqw 1.4cqw 1.1cqw;display:flex;flex-direction:column;background:var(--paper);color:var(--ink);border:.35cqw solid var(--ink);border-radius:.6cqw;box-shadow:.6cqw .6cqw 0 rgba(0,0,0,.55);overflow:hidden;font-size:calc(1.22cqw*var(--ts))}
+#st.pop{animation:pop .45s cubic-bezier(.2,1.4,.4,1)}
+@keyframes pop{from{transform:scale(.25);opacity:0}to{transform:scale(1);opacity:1}}
+.st-head{display:flex;align-items:center;gap:.8em;padding:.45em .8em;background:var(--ink);color:var(--paper)}
+.st-lp{font-family:var(--display);font-weight:800;background:var(--brass);color:var(--ink);border-radius:.3em;padding:0 .45em;font-size:1.2em}
+.st-head h2{font-family:var(--display);font-weight:800;font-size:1.5em;margin:0;flex:1;line-height:1.1}
+.st-body{flex:1;display:grid;grid-template-columns:56% 44%;min-height:0}
+.st-left{display:flex;flex-direction:column;gap:.5em;padding:.7em;border-right:.2cqw solid var(--ink);min-width:0;min-height:0;background:#e9dfc7;justify-content:center}
+#gcv{width:100%;aspect-ratio:1400/874;display:block;border:.22cqw solid var(--ink);border-radius:.3em;background:#2b2b2b}
+#stCap{font-size:.9em;line-height:1.35;color:#4a3557}
+.st-right{overflow-y:auto;padding:.8em 1em 2em;min-width:0;line-height:1.42;-webkit-user-select:text;user-select:text;scroll-behavior:smooth}
+.st-right h3{font-family:var(--display);font-weight:800;font-size:1.3em;margin:.5em 0 .3em;line-height:1.15}
+.nr{display:inline-block;min-width:1.5em;text-align:center;background:var(--teal);color:#fff;border-radius:.3em;padding:0 .25em;margin-right:.3em;font-size:.9em}
+.chips{display:flex;gap:.25em;flex-wrap:wrap;margin:.1em 0 .4em}
+.chips button{font-size:.72em;color:var(--ink);background:var(--paper);border:2px solid var(--ink);border-radius:1em;padding:0 .5em;opacity:.45}
+.chips button.on{opacity:1;background:var(--brassL)}
+.chips button.done{opacity:1;background:var(--okL)}
+.chips button:disabled{cursor:default}
+.ctx{background:#fff6dc;border:2px dashed var(--brass);border-radius:.4em;padding:.4em .65em;margin:.4em 0}
+.ctx b.who{font-family:var(--display);color:var(--rose)}
+.check{display:flex;gap:.5em;align-items:center;margin:.6em 0;padding:.4em .6em;border:2px solid var(--ink);border-radius:.45em;background:#fff;cursor:pointer;font-weight:bold}
+.check input{width:1.3em;height:1.3em;accent-color:var(--ok);flex:none}
+.check.ok{border-color:var(--ok);background:var(--okL)}
+.simstate{font-size:.92em;padding:.3em .6em;border-left:.3em solid var(--teal);background:#e6f2f0;border-radius:0 .3em .3em 0;margin:.4em 0}
+.simstate.ok{border-color:var(--ok);background:var(--okL)}
+.tipbtn{color:var(--ink);background:#fff;border-color:var(--brass);font-size:.88em;margin:.2em 0}
+.tip{font-size:.92em;background:#fff6dc;border-left:.3em solid var(--brass);padding:.3em .55em;margin:.3em 0;border-radius:0 .3em .3em 0}
+.mc{border:3px solid var(--ink);border-radius:.5em;padding:.6em .7em;background:#fff;margin:.6em 0}
+.mc .q{font-weight:bold;margin-bottom:.4em}
+.opts{display:flex;flex-direction:column;gap:.35em}
+.opt{color:var(--ink);background:var(--paper);border:2px solid var(--ink);text-align:left;line-height:1.35;padding:.35em .6em;border-radius:.4em}
+.opt:hover,.opt:focus-visible{background:#fff1c4;color:var(--ink)}
+.opt.wrong{background:var(--badL);border-color:var(--bad);cursor:default}
+.opt.wrong::before{content:"✗ ";font-weight:bold;color:var(--bad)}
+.why{font-size:.9em;background:var(--badL);border-left:.3em solid var(--bad);padding:.25em .5em;margin:.1em 0 .2em .8em;border-radius:0 .3em .3em 0}
+.reveal{border:3px solid var(--ok);background:var(--okL);border-radius:.5em;padding:.5em .7em;margin:.6em 0}
+.reveal .lbl{font-family:var(--display);font-weight:800;color:var(--ok);font-size:.9em;letter-spacing:.04em;text-transform:uppercase}
+.reveal .ans{font-weight:bold;margin:.15em 0 .2em}
+.reveal p{margin:.2em 0}
+.next{display:block;width:100%;margin:.8em 0 .2em;text-align:left;font-family:var(--display);font-weight:700;font-size:1.12em;line-height:1.25;color:var(--ink);background:var(--brassL);border:3px solid var(--ink);border-radius:.5em;padding:.5em .8em;box-shadow:.25em .25em 0 var(--ink)}
+.next:hover,.next:focus-visible{background:#ffe08f;color:var(--ink)}
+.next::before{content:"▶ "}
+.back{display:block;width:100%;margin:.8em 0;font-family:var(--display);font-weight:800;font-size:1.1em;color:var(--paper);background:var(--teal);border:3px solid var(--ink);border-radius:.5em;padding:.45em .8em;box-shadow:.25em .25em 0 var(--ink)}
+.wait{font-size:.92em;color:#6b5a6e;font-style:italic;margin:.6em 0}
+
+/* ---------- Tablet-Simulation (Google) ---------- */
+.tabframe{position:relative;width:100%;aspect-ratio:4/3;background:#1d1d1f;border-radius:1.2em;padding:.9em;box-sizing:border-box;box-shadow:.25em .25em 0 rgba(0,0,0,.35)}
+#sim{position:relative;width:100%;height:100%;background:#fff;border-radius:.4em;overflow:hidden;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;font-size:.8em;color:#1f1f1f;line-height:1.3}
+#simMsg{font-size:.95em;line-height:1.35;background:#fff;border:2px solid var(--ink);border-radius:.45em;padding:.35em .6em;min-height:2.6em}
+#simMsg b{color:var(--teal)}
+#simMsg.bad{border-color:var(--bad);background:var(--badL)}
+#simMsg.ok{border-color:var(--ok);background:var(--okL)}
+#sim button{font:inherit;color:inherit;background:none;border:0;padding:0;border-radius:.4em;cursor:pointer}
+#sim button:hover{background:rgba(26,115,232,.08)}
+#sim .pulse{animation:pulse 1s ease-in-out infinite;box-shadow:0 0 0 .25em rgba(217,112,42,.85)!important;position:relative;z-index:2}
+@keyframes pulse{50%{box-shadow:0 0 0 .55em rgba(217,112,42,.25)}}
+#sim .shake{animation:shake .3s}
+@keyframes shake{25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
+.g-top{display:flex;align-items:center;gap:.8em;padding:.6em .9em;border-bottom:1px solid #e3e3e3;height:3.2em;box-sizing:border-box}
+.g-top .ttl{font-size:1.3em;flex:1;display:flex;align-items:center;gap:.45em}
+.g-top .sub{font-size:.75em;color:#555;display:block}
+.g-dots{width:2.4em;height:2.4em;display:grid!important;place-items:center}
+.ava{width:2em;height:2em;border-radius:50%;background:#7b5ea7;color:#fff;display:grid;place-items:center;font-weight:600;flex:none}
+.google{font-size:3.6em;font-weight:600;letter-spacing:-.02em;text-align:center;margin-top:1.2em}
+.google span:nth-child(1){color:#4285f4}.google span:nth-child(2){color:#ea4335}.google span:nth-child(3){color:#fbbc05}.google span:nth-child(4){color:#4285f4}.google span:nth-child(5){color:#34a853}.google span:nth-child(6){color:#ea4335}
+.gsearch{width:70%;margin:1.2em auto;border:1px solid #dfe1e5;border-radius:2em;padding:.7em 1.1em;color:#777}
+.g-launch{position:absolute;right:.8em;top:3.4em;width:52%;background:#f3f6fc;border-radius:1.2em;box-shadow:0 .3em 1.2em rgba(0,0,0,.25);padding:.9em;z-index:3}
+.g-launch h4{margin:.1em .3em .6em;font-weight:500;font-size:1.15em}
+.g-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:.4em}
+.g-app{display:flex!important;flex-direction:column;align-items:center;gap:.3em;padding:.45em .2em!important;font-size:.92em}
+.g-app svg{width:2.6em;height:2.6em}
+.cr-cards{display:grid;grid-template-columns:repeat(2,1fr);gap:.8em;padding:.9em}
+.cr-card{border:1px solid #dadce0!important;border-radius:.6em!important;overflow:hidden;text-align:left;display:block}
+.cr-card .bn{height:3.4em;padding:.5em .7em;color:#fff;box-sizing:border-box}
+.cr-card .bn b{display:block;font-size:1.15em}
+.cr-card .ft{height:2.2em}
+.cr-banner{margin:.7em .9em;border-radius:.6em;background:#3c7d5a;color:#fff;padding:.9em 1em}
+.cr-banner b{font-size:1.4em;display:block}
+.cr-tabs{display:flex;gap:1.6em;padding:0 1em;border-bottom:1px solid #e3e3e3}
+.cr-tabs button{padding:.6em .2em!important;border-radius:0!important;border-bottom:.2em solid transparent!important}
+.cr-tabs button.cur{color:#1967d2;border-bottom-color:#1967d2!important}
+.cr-post{margin:.7em .9em;border:1px solid #dadce0!important;border-radius:.6em!important;padding:.7em .8em!important;display:flex!important;gap:.7em;align-items:center;text-align:left;width:calc(100% - 1.8em)}
+.cr-ic{width:2.3em;height:2.3em;border-radius:50%;background:#1967d2;color:#fff;display:grid;place-items:center;flex:none;font-size:1em}
+.cr-ic.v{background:#9b6bd6}
+.cr-item{display:flex!important;gap:.7em;align-items:center;width:calc(100% - 1.8em);margin:0 .9em;padding:.7em .4em!important;border-bottom:1px solid #e3e3e3!important;border-radius:0!important;text-align:left}
+.cr-item .meta{margin-left:auto;font-size:.82em;color:#5f6368;font-style:italic;white-space:nowrap}
+.cr-task{display:grid;grid-template-columns:1.55fr 1fr;gap:.9em;padding:.8em .9em;height:calc(100% - 3.2em);box-sizing:border-box}
+.cr-task .txt{overflow:auto;font-size:.88em}
+.cr-task h5{font-size:1.45em;font-weight:500;color:#1967d2;margin:.1em 0 .2em}
+.cr-task .by{color:#5f6368;font-size:.9em;border-bottom:1px solid #1967d2;padding-bottom:.4em;margin-bottom:.4em}
+.cr-task p{margin:.35em 0}
+.cr-side{border:1px solid #dadce0;border-radius:.7em;padding:.8em;box-shadow:0 .1em .4em rgba(0,0,0,.08);align-self:start;display:flex;flex-direction:column;gap:.5em}
+.cr-side .hd{display:flex;justify-content:space-between;font-size:1.05em}
+.cr-side .st0{color:#188038;font-size:.85em}
+.cr-side .st1{color:#5f6368;font-size:.85em}
+.btn-o{border:1px solid #dadce0!important;color:#1967d2!important;padding:.5em .6em!important;font-weight:500!important;text-align:center}
+.btn-b{background:#1967d2!important;color:#fff!important;padding:.5em .6em!important;font-weight:500!important;text-align:center}
+.att{display:flex;gap:.4em;align-items:center;border:1px solid #dadce0;border-radius:.4em;padding:.3em .4em;font-size:.8em;word-break:break-all}
+.att svg{width:1.6em;height:1.6em;flex:none}
+.menu{position:absolute;background:#fff;border-radius:.5em;box-shadow:0 .2em 1em rgba(0,0,0,.3);padding:.4em 0;z-index:3;min-width:13em}
+.menu button{display:flex!important;gap:.6em;align-items:center;width:100%;padding:.45em 1em!important;border-radius:0!important;text-align:left}
+.menu button svg{width:1.4em;height:1.4em}
+.menu hr{border:0;border-top:1px solid #e3e3e3;margin:.3em 0}
+.menu .lab{font-size:.8em;color:#5f6368;padding:.2em 1em}
+.scrim{position:absolute;inset:0;background:rgba(0,0,0,.32);z-index:2}
+.dlg{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:62%;background:#fff;border-radius:.8em;padding:1em 1.2em;z-index:4;box-shadow:0 .3em 1.4em rgba(0,0,0,.35)}
+.dlg h6{font-size:1.25em;font-weight:500;margin:0 0 .5em}
+.dlg .row{display:flex;justify-content:flex-end;gap:.6em;margin-top:.8em}
+.dlg .row button{padding:.4em .9em!important;color:#1967d2;font-weight:600}
+.dlg input{font:inherit;width:100%;box-sizing:border-box;border:0;border-bottom:2px solid #1967d2;padding:.3em 0;margin-top:.3em;font-family:Menlo,monospace;font-size:.9em}
+.fab{position:absolute;right:1.2em;bottom:1.2em;width:3.6em;height:3.6em;border-radius:1em!important;background:#fff!important;box-shadow:0 .2em .6em rgba(0,0,0,.3);display:grid!important;place-items:center;font-size:1.6em}
+.empty{padding:2em;color:#5f6368;text-align:center}
+.ed-bar{display:flex;align-items:center;gap:.6em;padding:.5em .8em;border-bottom:1px solid #e3e3e3}
+.ed-bar svg{width:2em;height:2em;flex:none}
+.ed-title{padding:.2em .4em!important;border:1px solid transparent!important;font-size:1.1em;text-align:left}
+.ed-title.named{font-family:Menlo,monospace;font-size:.85em}
+.ed-tools{height:1.8em;background:#edf2fa;margin:.3em .8em;border-radius:1em}
+.doc-page{background:#fff;margin:.6em auto;width:62%;height:62%;box-shadow:0 0 .3em rgba(0,0,0,.2);padding:1em;box-sizing:border-box;color:#999}
+.sh-grid{margin:.4em .8em;display:grid;grid-template-columns:2em repeat(5,1fr);border-left:1px solid #ddd;border-top:1px solid #ddd;font-size:.8em}
+.sh-grid div{border-right:1px solid #ddd;border-bottom:1px solid #ddd;height:1.6em;text-align:center;color:#666}
+.sh-grid div.h{background:#f8f9fa}
+.sl-wrap{display:flex;gap:.6em;padding:.6em .8em;height:70%}
+.sl-thumbs{width:18%;display:flex;flex-direction:column;gap:.4em}
+.sl-thumbs div{aspect-ratio:16/9;border:2px solid #1a73e8;border-radius:.2em}
+.sl-main{flex:1;aspect-ratio:16/9;align-self:flex-start;border:1px solid #ddd;box-shadow:0 0 .3em rgba(0,0,0,.15);display:grid;place-items:center;color:#999;font-size:1.2em}
+.pick{padding:.4em .9em}
+.pick button{display:flex!important;gap:.6em;align-items:center;width:100%;padding:.55em .5em!important;border-bottom:1px solid #eee!important;border-radius:0!important;text-align:left;font-family:Menlo,monospace;font-size:.82em}
+.pick button.sel{background:#e8f0fe!important}
+.pick button svg{width:1.6em;height:1.6em;flex:none}
+.done-badge{display:inline-block;color:#188038;font-weight:600}
+
+/* ---------- Zertifikat ---------- */
+#cert{inset:1.6cqw;background:var(--paper);color:var(--ink);border:.35cqw solid var(--ink);border-radius:.6cqw;box-shadow:.6cqw .6cqw 0 rgba(0,0,0,.55);display:flex;flex-direction:column;overflow:hidden;z-index:6}
+#certBody{overflow:auto;padding:.8em 1.1em 2em;line-height:1.4}
+#certBody .acts{display:flex;gap:.6em;flex-wrap:wrap;align-items:center;margin:.5em 0}
+#certBody .acts button{color:var(--ink);background:var(--brassL);border-color:var(--ink);font-family:var(--display);font-weight:800;font-size:1.1em}
+#certCv{display:block;width:100%;max-width:62em;margin:.6em auto;border:1px solid #d8ccb0;border-radius:.3em;background:#fff}
+.srcnote{font-size:.9em;color:#5a4a5e}
+[hidden]{display:none!important}
+#turn{display:none}
+@media (orientation:portrait) and (max-width:820px){#turn{display:flex;position:fixed;inset:0;z-index:20;background:var(--stageBg);color:var(--paper);align-items:center;justify-content:center;text-align:center;padding:24px;font-size:20px;line-height:1.4;font-family:var(--display)}}
+@media (prefers-reduced-motion:reduce){#st.pop{animation:none}#sim .pulse{animation:none}}
+</style>
+</head>
+<body>
+<div id="turn"><p>Bitte das Tablet quer halten.<br>Rosas Tablet ist für das Querformat gebaut.</p></div>
+<div id="stage">
+  <canvas id="cv" class="room" aria-label="Klassenzimmer der 9.1 mit zwei Tablet-Tischen"></canvas>
+  <div id="top" class="ui">
+    <div id="goal"><b>Nahziel:</b> <span id="goaltext"></span></div>
+    <div id="btns">
+      <button id="bSfx" aria-pressed="true" title="Geräusche an/aus">Geräusche</button>
+      <button id="bText" title="Textgröße">Text A</button>
+      <button id="bReset" title="Fortschritt löschen">Neu starten</button>
+    </div>
+  </div>
+  <div id="bottom" class="ui"><div id="label" aria-live="polite"></div></div>
+
+  <div id="start" class="ui card">
+    <div class="kicker">Klasse 9.1 · Workshop Tabletklasse</div>
+    <h1>Rosas Tablet</h1>
+    <p>Rosa zeigt dir das Klassenzimmer der Tabletklasse. An <b>Tisch 1</b> übst du Google Classroom, Docs, Sheets und Präsentationen, an <b>Tisch 2</b> alle Werkzeuge von GoodNotes. Zu jedem Schritt gibt es einen Auftrag für dein echtes Tablet und kurze Fragen. Am Ende bekommst du dein Zertifikat als PDF für die Abgabe im Classroom.</p>
+    <p><small><b>Tippen:</b> gehen, Tisch öffnen, Rosa um Rat fragen · <b>Tastatur:</b> Tab wählt, Enter öffnet, Esc führt zurück</small></p>
+    <div class="names">
+      <label for="vn">Vorname</label><label for="nn">Nachname</label>
+      <input type="text" id="vn" autocomplete="off" maxlength="40" placeholder="z. B. Mila">
+      <input type="text" id="nn" autocomplete="off" maxlength="40" placeholder="z. B. Muster">
+    </div>
+    <p class="srcnote" style="color:#cfc3d6">Dein Nachname wird für die Dateinamen gebraucht, z. B. <span class="fn" id="fnPrev">2026-11-23-Textdokument-Muster</span>. Alles bleibt nur auf diesem Gerät.</p>
+    <div class="row"><button id="bStart" disabled>Klassenzimmer betreten</button></div>
+  </div>
+
+  <div id="st" class="ui" hidden role="dialog" aria-modal="true" aria-labelledby="stTitle">
+    <div class="st-head"><span class="st-lp" id="stLp">1</span><h2 id="stTitle"></h2><button id="stClose">Zurück ins Klassenzimmer ✕</button></div>
+    <div class="st-body">
+      <div class="st-left">
+        <div id="simWrap"><div class="tabframe"><div id="sim"></div></div></div>
+        <div id="simMsg" aria-live="polite"></div>
+        <canvas id="gcv" width="1400" height="874" aria-label="GoodNotes-Werkzeugleiste mit Nummern 1 bis 24, Rosa zeigt auf das aktuelle Werkzeug"></canvas>
+        <div id="stCap"></div>
+      </div>
+      <div class="st-right" id="panel"></div>
+    </div>
+  </div>
+
+  <div id="end" class="ui card" hidden>
+    <div class="kicker">Alles geschafft</div>
+    <h1>Bereit für die Tabletklasse</h1>
+    <p>Du kennst Classroom, die Google-Apps und die GoodNotes-Werkzeuge 1 bis 24. Denk daran: Erst wenn du im Classroom auf <b>„Abgeben“</b> getippt hast, ist deine Abgabe wirklich angekommen.</p>
+    <div class="row"><button id="endCert">Zertifikat nochmal speichern</button><button id="endBack">Weiter im Klassenzimmer</button></div>
+  </div>
+
+  <div id="cert" class="ui" hidden role="dialog" aria-modal="true" aria-labelledby="certTitle">
+    <div class="st-head"><span class="st-lp">★</span><h2 id="certTitle">Dein Zertifikat</h2><button id="certClose">Zurück ins Klassenzimmer ✕</button></div>
+    <div id="certBody">
+      <div class="acts"><button id="certPdf">Zertifikat als PDF speichern</button><span id="certMsg" class="srcnote" aria-live="polite"></span></div>
+      <p class="srcnote">Der Dateiname folgt der Benennungsregel: <span class="fn" id="certName"></span>. Auf dem iPad landet die Datei in der App <b>Dateien</b> unter <b>Downloads</b>. Von dort fügst du sie im Classroom über <b>Hinzufügen oder erstellen → Datei</b> hinzu.</p>
+      <canvas id="certCv" width="2400" height="1697" aria-label="Vorschau des Zertifikats"></canvas>
+    </div>
+  </div>
+</div>
+
+<script>
+'use strict';
+const SHOT = '{{IMG:werkzeuge}}';
+const REGELN = {{REGELN}};
+const W = 1920, H = 1080, BPM = 100;
+const cv = document.getElementById('cv'), ctx0 = cv.getContext('2d');
+cv.width = W; cv.height = H;
+let ctx = ctx0;
+const $ = s => document.querySelector(s);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' }[c]));
+const fmt = s => esc(s).replace(/\*\*(.+?)\*\*/g, '<b>$1</b>').replace(/«(.+?)»/g, (_, k) => '<span class="fn">' + esc(fname(k)) + '</span>');
+
+const P = {
+  ink:'#2b1d2e', violet:'#4a3557', violetD:'#33243f',
+  woodD:'#5a3424', wood:'#8a5332', woodL:'#b9773f', woodXL:'#d39a5a',
+  brass:'#d9a441', brassL:'#f2cf6b', tealD:'#1f4f5a', teal:'#1f7a72', tealL:'#8fd0d6', sky:'#8fd0d6', cloud:'#f4ecd8',
+  greenD:'#3f7a3a', green:'#6fae4a', rose:'#c8364f', roseL:'#e8667a', orange:'#d9702a',
+  skinN:'#d9a07a', wall:'#e6dcc4', lino:'#7c8a7f', hair:'#3a2620', hat:'#3c2a4a', cardigan:'#1f7a72', cardiganD:'#175c56', blouse:'#f7f3ea'
+};
+
+// ---------- Dateinamen nach der Benennungsregel Jahr-Monat-Tag-Inhalt-Name ----------
+function isoToday(){ const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
+function dmyToday(){ const [y, m, d] = isoToday().split('-'); return d + '-' + m + '-' + y; }
+const clean = s => (s || '').normalize('NFC').replace(/[^\p{L}\p{N}]/gu, '');
+const NN = () => clean(G.nn) || 'Name';
+function fname(inhalt){ return isoToday() + '-' + inhalt + '-' + NN(); }
+const INHALT = { text:'Textdokument', sheet:'Tabellenkalkulation', slide:'Präsentation', regeln:'Klassenregeln', cert:'Zertifikat' };
+
+// ---------- Aufgaben Tisch 1: Google & Classroom ----------
+const APPS = [['konto', 'Konto'], ['gmail', 'Gmail'], ['drive', 'Drive'], ['classroom', 'Classroom'], ['docs', 'Docs'], ['gemini', 'Gemini'], ['sheets', 'Sheets'], ['slides', 'Präsentati…'], ['kalender', 'Kalender']];
+const viaMenu = (app, name) => [
+  { scr:'home', t:'dots', h:'Tippe oben rechts auf das <b>9-Punkte-Menü</b> ▦.' },
+  { scr:'launcher', t:'app-' + app, h:'Wähle <b>' + name + '</b>.' }];
+const newDoc = (kind, name, unb) => [...viaMenu(kind, name),
+  { scr:kind + '-home', t:'fab', h:'Tippe auf das große <b>+</b> unten rechts.' },
+  { scr:kind + '-menu', t:'new-blank', h:'Wähle <b>Neu</b> (leer).' },
+  { scr:kind + '-edit', t:'title', h:'Tippe oben links auf <b>„' + unb + '“</b>, um den Namen zu ändern.' },
+  { scr:kind + '-rename', t:'ok', h:'Der richtige Name steht schon drin. Tippe auf <b>OK</b>.' }];
+
+const GOOGLE = [
+  { id:'menu', short:'9-Punkte-Menü', title:'Das 9-Punkte-Menü',
+    rosa:'Alle Google-Apps erreichst du über das 9-Punkte-Menü oben rechts. Probier es links auf dem Bildschirm aus.',
+    auftrag:'Öffne auf deinem Tablet **Safari** und gehe auf **classroom.google.com**. Melde dich mit deinem Schulkonto an. Tippe oben rechts auf das **9-Punkte-Menü** und schau dir an, welche Apps dort liegen.',
+    tipp:'Das Symbol besteht aus 3 × 3 kleinen Punkten und liegt direkt links neben deinem runden Profilbild. Hast du die Apps installiert, findest du sie auch als Symbole auf dem Home-Bildschirm.',
+    sim:[...viaMenu('classroom', 'Classroom')], end:'cr-home',
+    mc:[{ q:'Wofür ist das 9-Punkte-Menü oben rechts da?', opts:[
+      { t:'Es öffnet die Liste der Google-Apps wie Classroom, Docs und Sheets.', ok:1, erkl:'Von hier erreichst du alle Google-Apps deines Schulkontos.' },
+      { t:'Es öffnet die Einstellungen des iPads wie WLAN, Ton und Helligkeit.', why:'Das sind die iPad-Einstellungen, die öffnest du über die graue Zahnrad-App.' },
+      { t:'Es zeigt alle Personen im Kurs mit ihren Namen und Profilbildern.', why:'Die Personen stehen im Kurs unter dem Reiter „Personen“.' },
+      { t:'Es meldet dich ab und schließt alle geöffneten Tabs im Browser.', why:'Abmelden geht über dein rundes Profilbild ganz rechts.' }] }] },
+  { id:'aufgabe', short:'Aufgabe finden', title:'Die Aufgabe im Classroom',
+    rosa:'Im Kurs „Klasse 9.1“ wartet unter Kursaufgaben die Aufgabe zum Tabletworkshop. Findest du sie?',
+    auftrag:'Öffne im Classroom den Kurs **Klasse 9.1** → **Kursaufgaben** → **Tabletworkshop (Classroom, Goodnotes und Tabletregeln)**. Lies den Text der Aufgabe genau.',
+    tipp:'Die Reiter Stream, Kursaufgaben und Personen liegen oben unter dem Kursnamen. Im Stream erscheint nur eine kurze Meldung, die ganze Aufgabe mit dem Abgabefeld steht unter Kursaufgaben.',
+    sim:[{ scr:'cr-home', t:'course', h:'Öffne den Kurs <b>Klasse 9.1</b>.' },
+      { scr:'cr-stream', t:['tab-work', 'post'], h:'Tippe oben auf den Reiter <b>Kursaufgaben</b>.' },
+      { scr:'cr-work', t:'task', h:'Tippe auf <b>Tabletworkshop (Classroom, Goodnotes und Tabletregeln)</b>.' }], end:'cr-task',
+    mc:[{ q:'Ab wann ist die Aufgabe im Classroom für euch sichtbar?', opts:[
+      { t:'Am Montag, 23.11.2026, ab 8:25 Uhr', ok:1, erkl:'Die Lehrkraft hat die Aufgabe geplant: Sie wird zum „Streaming-Zeitpunkt“ automatisch veröffentlicht.' },
+      { t:'Am Montag, 23.11.2026, ab 7:45 Uhr', why:'Geplant ist 8:25 Uhr, vorher ist die Aufgabe noch unsichtbar.' },
+      { t:'Am Sonntag, 22.11.2026, ab 8:25 Uhr', why:'Die Aufgabe erscheint erst am Tag des Workshops.' },
+      { t:'Am Dienstag, 24.11.2026, ab 8:25 Uhr', why:'Der Workshop ist am Montag, dann erscheint auch die Aufgabe.' }] },
+     { q:'Welche fünf Dateien gebt ihr in dieser Aufgabe ab?', opts:[
+      { t:'Klassenregeln (unterschrieben), Zertifikat, Text, Präsentation, Tabelle', ok:1, erkl:'Genau diese fünf Dateien, jeweils richtig benannt.' },
+      { t:'Klassenregeln (unterschrieben), Zertifikat, Text, Präsentation, Foto', why:'Ein Foto wird nicht verlangt. Gesucht ist eine Tabellenkalkulation.' },
+      { t:'Klassenregeln (unterschrieben), Regelplakat, Text, Präsentation, Tabelle', why:'Das Regelplakat hängt im Klassenraum. Abgegeben wird dein Zertifikat von Rosas Tablet.' },
+      { t:'Stundenplan (ausgefüllt), Zertifikat, Text, Präsentation, Tabelle', why:'Ein Stundenplan wird nicht verlangt, wohl aber die unterschriebenen Klassenregeln.' }] }] },
+  { id:'namen', short:'Richtig benennen', title:'Dateien richtig benennen',
+    rosa:'Ordnung ist das halbe Tabletleben! Jede Datei bekommt einen Namen nach der Regel Jahr-Monat-Tag-Inhalt-Name.',
+    auftrag:'Präge dir die Regel ein: **Jahr-Monat-Tag-Inhalt-Name**. Deine fünf Dateien heißen heute: «Textdokument», «Tabellenkalkulation», «Präsentation», «Klassenregeln» und «Zertifikat». Die Endung (.docx, .pdf) ergänzt die App selbst.',
+    tipp:'Das Datum steht vorne und läuft vom Großen zum Kleinen: erst das Jahr, dann der Monat, dann der Tag. Danach folgt der Inhalt und ganz am Ende dein Nachname.',
+    mc:[{ dyn:'name' },
+     { q:'Warum beginnt der Dateiname mit Jahr-Monat-Tag?', opts:[
+      { t:'So sortieren sich die Dateien von selbst nach Datum, ältere stehen zuerst.', ok:1, erkl:'Bei Jahr-Monat-Tag ergibt die alphabetische Sortierung genau die zeitliche Reihenfolge.' },
+      { t:'So erkennt Google die Datei als Hausaufgabe und gibt sie von selbst ab.', why:'Abgeben musst du immer selbst, mit dem Knopf „Abgeben“.' },
+      { t:'So kann niemand außer der Lehrkraft die Datei öffnen oder bearbeiten.', why:'Wer eine Datei öffnen darf, regelt die Freigabe, nicht der Name.' },
+      { t:'So wird die Datei kleiner und passt besser in den Speicher des Tablets.', why:'Der Name hat keinen Einfluss auf die Dateigröße.' }] }] },
+  { id:'docs', short:'Docs', title:'Ein Textdokument mit Docs',
+    rosa:'Jetzt wird es praktisch: Wir erstellen ein Textdokument und geben ihm gleich den richtigen Namen.',
+    auftrag:'Erstelle über das 9-Punkte-Menü in **Docs** ein neues leeres Dokument. Schreibe zwei bis drei Sätze: Was hast du heute über Classroom gelernt? Benenne es «Textdokument».',
+    tipp:'Docs hat ein blaues Symbol mit weißen Textzeilen. Den Namen änderst du oben links, dort steht zuerst „Unbenanntes Dokument“.',
+    sim:newDoc('docs', 'Docs', 'Unbenanntes Dokument'), end:'docs-edit',
+    mc:[{ q:'Wo änderst du den Namen eines neuen Google-Dokuments?', opts:[
+      { t:'Oben links: auf „Unbenanntes Dokument“ tippen und den Namen eintippen', ok:1, erkl:'Der Titel oben links ist der Dateiname, so erscheint die Datei auch in Drive und im Classroom.' },
+      { t:'Unten rechts: auf das große Plus tippen und den Namen eintippen', why:'Das Plus erstellt ein weiteres neues Dokument.' },
+      { t:'Im Text: den Namen als Überschrift in die erste Zeile schreiben', why:'Die Überschrift steht nur im Text, der Dateiname bleibt „Unbenanntes Dokument“.' },
+      { t:'Im Classroom: beim Abgeben den Namen in einen Kommentar schreiben', why:'Ein Kommentar benennt die Datei nicht um.' }] },
+     { q:'Musst du ein Google-Dokument zwischendurch speichern?', opts:[
+      { t:'Nein, Docs speichert jede Änderung automatisch in deinem Google Drive.', ok:1, erkl:'Alles liegt sofort in deinem Drive und ist auf jedem Gerät abrufbar.' },
+      { t:'Ja, über Teilen und „Speichern unter“, sonst ist beim Schließen alles weg.', why:'Docs speichert automatisch, ein „Speichern unter“ brauchst du nicht.' },
+      { t:'Ja, aber nur wenn du es vorher als .docx auf das Tablet herunterlädst.', why:'Ein Download ist nicht nötig, die Datei liegt in Drive.' },
+      { t:'Nein, aber es wird nach 24 Stunden automatisch wieder gelöscht.', why:'Google-Dateien bleiben in deinem Drive, bis du sie selbst löschst.' }] }] },
+  { id:'sheets', short:'Sheets', title:'Eine Tabelle mit Sheets',
+    rosa:'Als Nächstes eine Tabellenkalkulation. Die App heißt Sheets, im Deutschen auch Google Tabellen.',
+    auftrag:'Erstelle in **Sheets** eine neue leere Tabelle. Trage in Spalte A die Wochentage Montag bis Freitag ein und in Spalte B jeweils dein Fach in der ersten Stunde. Benenne sie «Tabellenkalkulation».',
+    tipp:'Sheets hat ein grünes Symbol mit weißem Gitter. Tippe zweimal auf eine Zelle, um hineinzuschreiben.',
+    sim:newDoc('sheets', 'Sheets', 'Unbenannte Tabelle'), end:'sheets-edit',
+    mc:[{ q:'Woran erkennst du Sheets im 9-Punkte-Menü?', opts:[
+      { t:'Grünes Symbol mit einem Tabellengitter', ok:1, erkl:'Grün mit Gitter: Sheets. Blau mit Zeilen: Docs. Gelb mit Rahmen: Präsentationen.' },
+      { t:'Blaues Symbol mit weißen Textzeilen', why:'Das ist Docs, die Textverarbeitung.' },
+      { t:'Gelbes Symbol mit einem Folienrahmen', why:'Das ist Präsentationen.' },
+      { t:'Grüne Tafel mit einer kleinen Person', why:'Das ist Classroom.' }] },
+     { q:'Wofür eignet sich eine Tabellenkalkulation besonders?', opts:[
+      { t:'Zahlen und Listen in Zeilen und Spalten ordnen und damit rechnen', ok:1, erkl:'Zum Beispiel Messwerte, Noten-Übersichten oder Kassenlisten.' },
+      { t:'Lange Texte mit Überschriften, Absätzen und Seitenzahlen schreiben', why:'Dafür ist Docs gedacht.' },
+      { t:'Folien mit Bildern gestalten und sie vor der Klasse präsentieren', why:'Dafür ist Präsentationen gedacht.' },
+      { t:'Handschriftliche Notizen mit dem Apple Pencil auf Papier anfertigen', why:'Dafür nutzt du GoodNotes.' }] }] },
+  { id:'slides', short:'Präsentationen', title:'Eine Präsentation erstellen',
+    rosa:'Und zum Schluss an diesem Tisch eine Präsentation. Zwei Folien reichen!',
+    auftrag:'Erstelle in **Präsentationen** eine neue leere Präsentation mit zwei Folien: Folie 1 mit deinem Vornamen als Titel, Folie 2 mit einer Klassenregel, die dir besonders wichtig ist. Benenne sie «Präsentation».',
+    tipp:'Präsentationen hat ein gelbes Symbol mit weißem Rahmen. Eine neue Folie fügst du über das Plus bzw. „Neue Folie“ hinzu.',
+    sim:newDoc('slides', 'Präsentati…', 'Unbenannte Präsentation'), end:'slides-edit',
+    mc:[{ q:'Wie fügst du in Präsentationen eine weitere Folie hinzu?', opts:[
+      { t:'Über das Plus bzw. „Neue Folie“ bei den Folien', ok:1, erkl:'Die neue Folie erscheint hinter der gerade ausgewählten.' },
+      { t:'Über das 9-Punkte-Menü oben rechts im Browser', why:'Das 9-Punkte-Menü öffnet andere Google-Apps.' },
+      { t:'Über das Teilen-Symbol und dann „Kopie senden“', why:'Damit verschickst du die Präsentation, eine Folie entsteht nicht.' },
+      { t:'Über dein Profilbild und dann „Konto verwalten“', why:'Dort stellst du dein Google-Konto ein.' }] }] },
+  { id:'abgabe', short:'Abgeben', title:'Alles im Classroom abgeben', late:1,
+    rosa:'Das Wichtigste zum Schluss: Abgeben! Erst mit dem Knopf „Abgeben“ kommt alles bei der Lehrkraft an.',
+    auftrag:'Öffne im Classroom die Aufgabe **Tabletworkshop**. Füge unter **Meine Aufgaben** alle fünf Dateien hinzu: Text, Tabelle und Präsentation über **Hinzufügen oder erstellen → Google Drive**, deine Klassenregeln und dein Zertifikat (PDF) über **Hinzufügen oder erstellen → Datei**. Prüfe die Namen und tippe erst dann auf **Abgeben**.',
+    tipp:'Die PDFs liegen auf dem iPad in der App Dateien (Downloads bzw. dort, wo du sie gesichert hast), nicht in Drive. Deshalb wählst du für sie „Datei“.',
+    sim:[{ scr:'cr-task', t:'add', h:'Tippe unter Meine Aufgaben auf <b>+ Hinzufügen oder erstellen</b>.' },
+      { scr:'cr-add', t:'drive', h:'Wähle <b>Google Drive</b>, denn dort liegt dein Textdokument.' },
+      { scr:'drive-pick', t:'file-text', h:'Wähle dein <b>Textdokument</b>.' },
+      { scr:'drive-picked', t:'insert', h:'Tippe auf <b>Einfügen</b>.' },
+      { scr:'cr-task-att', t:'turnin', h:'Hier übst du es mit einer Datei. Tippe auf <b>Abgeben</b>.' },
+      { scr:'cr-confirm', t:'confirm', h:'Bestätige mit <b>Abgeben</b>.' }], end:'cr-done',
+    mc:[{ q:'Wie fügst du dein Zertifikat-PDF aus den Downloads hinzu?', opts:[
+      { t:'Hinzufügen oder erstellen → Datei → in „Dateien“ den Ordner Downloads wählen', ok:1, erkl:'„Datei“ öffnet die Dateien-App des iPads, dort liegt das gespeicherte PDF.' },
+      { t:'Hinzufügen oder erstellen → Google Drive → den Ordner „Zuletzt verwendet“ wählen', why:'Das PDF liegt auf dem iPad, nicht in deinem Drive.' },
+      { t:'Hinzufügen oder erstellen → Link → den Dateinamen als Internetadresse einfügen', why:'Ein Dateiname ist keine Internetadresse, so kommt das PDF nicht an.' },
+      { t:'Hinzufügen oder erstellen → Neu → Docs → das Zertifikat dort hineinkopieren', why:'So entsteht ein neues Textdokument, nicht dein Zertifikat-PDF.' }] },
+     { q:'Du hast alle Dateien angehängt, aber nicht auf „Abgeben“ getippt. Was gilt?', opts:[
+      { t:'Die Aufgabe steht weiter auf „Zugewiesen“, sie ist nicht abgegeben.', ok:1, erkl:'Erst „Abgeben“ reicht die Dateien ein. Danach steht dort „Abgegeben“.' },
+      { t:'Die Aufgabe gilt als abgegeben, sobald die erste Datei angehängt ist.', why:'Anhängen allein reicht nicht, du musst auf „Abgeben“ tippen.' },
+      { t:'Die Aufgabe wird um Mitternacht automatisch für dich abgegeben.', why:'Classroom gibt nichts automatisch ab.' },
+      { t:'Die Aufgabe gilt als abgegeben, aber nur mit der letzten Datei.', why:'Ohne „Abgeben“ ist gar nichts abgegeben.' }] },
+     { q:'Nach dem Abgeben merkst du: Eine Datei fehlt. Was tust du?', opts:[
+      { t:'„Abgabe rückgängig machen“, Datei ergänzen und erneut abgeben', ok:1, erkl:'So lange die Aufgabe offen ist, kannst du die Abgabe zurückholen und ergänzen.' },
+      { t:'Eine neue Aufgabe im Classroom anlegen und die Datei dort hochladen', why:'Aufgaben legt nur die Lehrkraft an.' },
+      { t:'Die fehlende Datei als Kommentar in den Stream der Klasse posten', why:'Dann sieht die ganze Klasse deine Datei, und in der Abgabe fehlt sie weiter.' },
+      { t:'Nichts, nach dem Abgeben lässt sich im Classroom nichts mehr ändern', why:'Mit „Abgabe rückgängig machen“ geht es doch.' }] }] }
+];
+
+// ---------- Tisch 2: GoodNotes-Werkzeugleiste (Positionen im Screenshot 1400 × 874) ----------
+const GN = [
+  { n:'1', x:30, y:48, name:'Miniaturansicht', auftrag:'Tippe oben links auf das Kachelsymbol. Füge eine leere Seite hinzu und ziehe sie in der Miniaturansicht an eine andere Stelle.',
+    tipp:'In der Miniaturansicht kannst du Seiten auch duplizieren, drehen oder löschen: einfach lange auf eine Seite drücken.',
+    mc:[{ q:'Wofür nutzt du die Miniaturansicht?', opts:[
+      { t:'Alle Seiten als kleine Bilder sehen, ordnen und schnell hinspringen', ok:1, erkl:'Praktisch bei langen Fach-Heften.' },
+      { t:'Den Bildschirm verkleinern, damit mehr Platz für die Handschrift bleibt', why:'Zum Vergrößern und Verkleinern nimmst du zwei Finger.' },
+      { t:'Ein Foto der aktuellen Seite aufnehmen und in der Galerie sichern', why:'Fotos fügst du mit Werkzeug 12 ein.' },
+      { t:'Die Schriftgröße in allen Textfeldern auf einmal kleiner machen', why:'Die Schrift änderst du beim Textfeld-Werkzeug.' }] }] },
+  { n:'2', x:78, y:48, name:'Suchen', auftrag:'Schreibe mit dem Stift das Wort „Tablet“ auf eine Seite. Tippe dann auf die Lupe oben links und suche nach „Tablet“.',
+    tipp:'GoodNotes erkennt deine Handschrift. Je ordentlicher du schreibst, desto besser findet die Suche.',
+    mc:[{ q:'Was findet die Suche in GoodNotes?', opts:[
+      { t:'Getippten Text, Text in PDFs und sogar deine Handschrift', ok:1, erkl:'Deshalb lohnt sich ein Heft pro Fach: Du findest alles wieder.' },
+      { t:'Nur die Titel der Dokumente, aber keine Inhalte der Seiten', why:'Die Suche durchsucht auch die Seiten selbst.' },
+      { t:'Nur Wörter, die du schon einmal im Internet gesucht hast', why:'Die Suche arbeitet in deinen Dokumenten, nicht im Internet.' },
+      { t:'Nur Bilder und Sticker, aber keinen Text und keine Handschrift', why:'Gerade Text und Handschrift werden gefunden.' }] }] },
+  { n:'3/4', x:59, y:97, name:'Rückgängig / Wiederholen', auftrag:'Zeichne drei Striche. Mache zwei davon rückgängig und hole einen mit „Wiederholen“ zurück.',
+    tipp:'Pfeil nach links: Rückgängig. Pfeil nach rechts: Wiederholen, also das Rückgängig-Machen zurücknehmen.',
+    mc:[{ q:'Du hast aus Versehen einen ganzen Absatz wegradiert. Was hilft am schnellsten?', opts:[
+      { t:'Auf den Pfeil nach links (Rückgängig) tippen', ok:1, erkl:'Rückgängig nimmt den letzten Schritt zurück, auch das Radieren.' },
+      { t:'Auf den Pfeil nach rechts (Wiederholen) tippen', why:'Wiederholen stellt nur etwas wieder her, das du gerade rückgängig gemacht hast.' },
+      { t:'Auf das Lasso tippen (Werkzeug 10) und neu ziehen', why:'Was wegradiert ist, kann das Lasso nicht mehr greifen.' },
+      { t:'Auf das Textfeld tippen (Werkzeug 13) und abtippen', why:'Das geht, dauert aber viel länger als Rückgängig.' }] }] },
+  { n:'5', x:144, y:97, name:'Stift', auftrag:'Wähle den Stift und tippe ihn ein zweites Mal an. Probiere Füller, Kugelschreiber und Pinselstift aus und schreibe deinen Vornamen in drei Farben.',
+    tipp:'Farben und Strichstärken erscheinen rechts in der Leiste, sobald der Stift ausgewählt ist.',
+    mc:[{ q:'Wie wechselst du die Stiftart, zum Beispiel vom Füller zum Kugelschreiber?', opts:[
+      { t:'Das Stift-Symbol noch einmal antippen, dann öffnet sich das Stift-Menü', ok:1, erkl:'Ein zweites Antippen öffnet bei fast allen Werkzeugen deren Einstellungen.' },
+      { t:'Lange auf die leere Seite drücken, bis ein Menü mit Stiften erscheint', why:'Langes Drücken auf die Seite öffnet ein anderes Menü (z. B. Einfügen).' },
+      { t:'In den iPad-Einstellungen unter „Apple Pencil“ die Stiftart auswählen', why:'Dort stellst du den Pencil selbst ein, nicht die Stifte in GoodNotes.' },
+      { t:'In der Miniaturansicht die Seite antippen und dort „Stift“ auswählen', why:'Die Miniaturansicht zeigt nur die Seiten.' }] }] },
+  { n:'6', x:198, y:97, name:'Radierer', auftrag:'Radiere ein Wort weg. Tippe den Radierer ein zweites Mal an und probiere „Ganze Striche löschen“ und „Nur Textmarker löschen“ aus.',
+    tipp:'Mit „Nur Textmarker löschen“ verschwindet die Markierung, deine Schrift bleibt stehen.',
+    mc:[{ q:'Du willst nur die gelbe Markierung entfernen, die Schrift soll bleiben. Was hilft?', opts:[
+      { t:'Beim Radierer „Nur Textmarker löschen“ einschalten', ok:1, erkl:'Dann radierst du nur Textmarker-Striche.' },
+      { t:'Beim Radierer „Ganze Striche löschen“ einschalten', why:'Dann verschwinden ganze Striche, auch deine Schrift.' },
+      { t:'Beim Radierer die Größe ganz nach oben schieben', why:'Ein großer Radierer löscht noch mehr Schrift mit.' },
+      { t:'Beim Textmarker Weiß wählen und alles übermalen', why:'Weißer Textmarker deckt auch die Schrift ab.' }] }] },
+  { n:'7', x:252, y:97, name:'Textmarker', auftrag:'Schreibe einen Satz und markiere das wichtigste Wort gelb. Probiere beim Textmarker auch die gerade Linie aus.',
+    tipp:'Mit gerader Linie werden deine Markierungen schön gleichmäßig.',
+    mc:[{ q:'Was unterscheidet den Textmarker vom Stift?', opts:[
+      { t:'Er ist durchsichtig, die Schrift darunter bleibt gut lesbar.', ok:1, erkl:'Wie ein echter Textmarker auf Papier.' },
+      { t:'Er ist deckend, die Schrift darunter wird ganz übermalt.', why:'Dann wäre er zum Markieren unbrauchbar.' },
+      { t:'Er malt nur waagerechte Linien, Kurven sind unmöglich.', why:'Du kannst frei markieren, gerade Linien sind nur eine Option.' },
+      { t:'Er verschwindet nach ein paar Sekunden wieder von selbst.', why:'Das macht der Laserpointer (Werkzeug 16).' }] }] },
+  { n:'8', x:307, y:97, name:'Tape', auftrag:'Schreibe eine Vokabel mit Übersetzung. Klebe das Tape über die Übersetzung. Tippe auf das Tape, um sie auf- und wieder zuzudecken.',
+    tipp:'Das Tape ist ideal für Vokabeln, Fachbegriffe und Formeln: Erst überlegen, dann aufdecken.',
+    mc:[{ q:'Wofür eignet sich das Tape besonders?', opts:[
+      { t:'Zum Lernen: Lösungen abdecken und durch Antippen aufdecken', ok:1, erkl:'So fragst du dich selbst ab.' },
+      { t:'Zum Kleben: Bilder dauerhaft an einer Seite befestigen', why:'Bilder sitzen von selbst fest, dafür braucht es kein Tape.' },
+      { t:'Zum Schützen: einzelne Seiten mit einem Passwort sperren', why:'Das Tape deckt nur ab, es ist kein Passwortschutz.' },
+      { t:'Zum Verbinden: zwei Dokumente zu einem zusammenfügen', why:'Dokumente verbindest du über Einfügen oder Importieren.' }] }] },
+  { n:'9', x:360, y:97, name:'Geometrie-Werkzeug', auftrag:'Zeichne mit dem Geometrie-Werkzeug grob ein Dreieck, einen Kreis und ein Rechteck. Beobachte, was mit deinen Formen passiert.',
+    tipp:'Gut für Skizzen in Mathe, Physik und Chemie.',
+    mc:[{ q:'Was macht das Geometrie-Werkzeug mit deiner Zeichnung?', opts:[
+      { t:'Es macht aus grob gezeichneten Formen saubere Kreise, Linien und Vielecke.', ok:1, erkl:'Deine Skizze wird automatisch ordentlich.' },
+      { t:'Es berechnet sofort Fläche und Umfang und schreibt sie neben die Form.', why:'Rechnen musst du schon selbst.' },
+      { t:'Es füllt alle gezeichneten Formen mit der zuletzt benutzten Farbe aus.', why:'Die Formen werden gerade gezogen, nicht ausgemalt.' },
+      { t:'Es verwandelt deine Handschrift in getippten Text in Druckbuchstaben.', why:'Das geht mit dem Lasso (Werkzeug 10) und „Umwandeln“.' }] }] },
+  { n:'10', x:413, y:97, name:'Lasso', auftrag:'Kreise mit dem Lasso ein geschriebenes Wort ein. Verschiebe es, ändere die Farbe und mache es größer.',
+    tipp:'Tippe nach dem Einkreisen auf die Auswahl: Dort findest du Farbe, Größe, Kopieren und „Umwandeln“ in getippten Text.',
+    mc:[{ q:'Du hast eine Zeichnung an die falsche Stelle gemalt. Wie verschiebst du sie?', opts:[
+      { t:'Mit dem Lasso einkreisen und an die neue Stelle ziehen', ok:1, erkl:'Das Lasso wählt aus, dann kannst du verschieben, vergrößern oder kopieren.' },
+      { t:'Mit dem Radierer löschen und an der neuen Stelle neu malen', why:'Das geht, ist aber viel mühsamer als das Lasso.' },
+      { t:'Mit dem Textmarker umranden und an die neue Stelle ziehen', why:'Der Textmarker markiert nur, er wählt nichts aus.' },
+      { t:'Mit dem Laserpointer antippen und an die neue Stelle ziehen', why:'Der Laserpointer zeigt nur kurz auf etwas.' }] }] },
+  { n:'11', x:467, y:97, name:'Sticker', auftrag:'Öffne die Sticker und klebe einen auf deine Seite. Mache ihn größer und drehe ihn.',
+    tipp:'Eigene Zeichnungen kannst du mit dem Lasso auswählen und als Sticker oder Element sichern.',
+    mc:[{ q:'Wie änderst du die Größe eines Stickers auf der Seite?', opts:[
+      { t:'Antippen bzw. mit dem Lasso wählen und an den Ecken ziehen', ok:1, erkl:'Genauso wie bei Bildern.' },
+      { t:'Mit dem Radierer am Rand vorsichtig etwas kleiner radieren', why:'Damit würdest du den Sticker nur beschädigen.' },
+      { t:'In der Miniaturansicht die ganze Seite etwas kleiner ziehen', why:'Die Seite behält ihre Größe.' },
+      { t:'Gar nicht, Sticker haben immer dieselbe festgelegte Größe', why:'Sticker lassen sich frei vergrößern und drehen.' }] }] },
+  { n:'12', x:520, y:97, name:'Bilder einfügen', auftrag:'Füge ein Foto aus deiner Fotomediathek ein, zum Beispiel von deinem Mäppchen (ohne Personen). Verschiebe es und schneide es zu.',
+    tipp:'Denk an Grundregel 3: Fotos von Personen nur mit deren ausdrücklichem Einverständnis, im Unterricht nur mit Erlaubnis der Lehrkraft.',
+    mc:[{ q:'Du willst ein Foto deiner Mitschüler:innen in deine Notizen einfügen. Was gilt?', opts:[
+      { t:'Alle abgebildeten Personen müssen ausdrücklich zustimmen.', ok:1, erkl:'So steht es in Grundregel 3 und in unserer Klassenregel „Fotos nur mit ausdrücklicher Erlaubnis“.' },
+      { t:'Das Foto muss vorher in Schwarz-Weiß umgewandelt werden.', why:'Die Farbe ändert nichts an den Rechten der Personen.' },
+      { t:'Nur die Lehrkraft muss dem Foto vorher ausdrücklich zustimmen.', why:'Vor allem die abgebildeten Personen müssen zustimmen.' },
+      { t:'Das Foto darf höchstens eine Woche alt und muss scharf sein.', why:'Alter und Schärfe spielen keine Rolle, die Zustimmung schon.' }] }] },
+  { n:'13', x:574, y:97, name:'Textfeld', auftrag:'Wähle das Textfeld-Werkzeug, tippe auf die Seite und schreibe deinen Namen mit der Tastatur.',
+    tipp:'Ein Textfeld kannst du jederzeit wieder antippen, verschieben und ändern.',
+    mc:[{ q:'Wann ist ein Textfeld besser als Handschrift?', opts:[
+      { t:'Wenn der Text gut lesbar und leicht änderbar sein soll', ok:1, erkl:'Zum Beispiel für Überschriften oder Plakate.' },
+      { t:'Wenn du schnell eine Skizze oder ein Diagramm zeichnest', why:'Dafür sind Stift und Geometrie-Werkzeug besser.' },
+      { t:'Wenn du eine Matheformel mit Brüchen und Wurzeln schreibst', why:'Formeln schreibst du mit dem Stift viel schneller.' },
+      { t:'Wenn du eine Lösung für das Lernen abdecken möchtest', why:'Dafür gibt es das Tape (Werkzeug 8).' }] }] },
+  { n:'22/23', x:1138, y:97, name:'Schriftfarbe und Stil', auftrag:'Markiere den Text in deinem Textfeld. Ändere über 22 die Schriftfarbe und über 23 den Stil des Textfelds.',
+    tipp:'Daneben stellst du Schriftart (z. B. AvenirNext) und Schriftgröße (z. B. 40) ein.',
+    mc:[{ q:'Die Leiste mit Schriftart, Größe, Schriftfarbe (22) und Stil (23) erscheint, wenn …', opts:[
+      { t:'… das Textfeld-Werkzeug ausgewählt ist.', ok:1, erkl:'Bei jedem Werkzeug zeigt der rechte Teil der Leiste dessen Einstellungen.' },
+      { t:'… das Stift-Werkzeug ausgewählt ist.', why:'Beim Stift siehst du Farben und Strichstärken, keine Schriftart.' },
+      { t:'… das Lupen-Werkzeug ausgewählt ist.', why:'Die Lupe öffnet das Zoomfenster.' },
+      { t:'… das Radierer-Werkzeug ausgewählt ist.', why:'Beim Radierer siehst du Radiergrößen.' }] }] },
+  { n:'14', x:628, y:97, name:'Lupe (Zoomfenster)', auftrag:'Öffne die Lupe. Schreibe im Zoomfenster unten einen Satz in kleiner, ordentlicher Schrift.',
+    tipp:'Das blaue Kästchen auf der Seite zeigt, wo gerade geschrieben wird. Es rückt beim Schreiben von selbst weiter.',
+    mc:[{ q:'Wofür ist die Lupe (Zoomfenster) gedacht?', opts:[
+      { t:'Klein und ordentlich schreiben: unten groß schreiben, auf der Seite erscheint es klein', ok:1, erkl:'Ideal für Beschriftungen und enge Lücken.' },
+      { t:'Wörter im ganzen Dokument suchen und alle Treffer auf den Seiten gelb markieren', why:'Das ist die Suche (Werkzeug 2).' },
+      { t:'Die ganze Seite vergrößern, damit alle sie am Beamer gut lesen können', why:'Dafür gibt es den Präsentationsmodus bei Werkzeug 20.' },
+      { t:'Fotos auf der Seite vergrößern und unscharfe Stellen automatisch schärfen', why:'Die Lupe verändert keine Fotos.' }] }] },
+  { n:'15', x:681, y:97, name:'Lineal', auftrag:'Lege das Lineal auf die Seite, drehe es mit zwei Fingern schräg und ziehe mit dem Stift eine gerade Linie daran entlang.',
+    tipp:'Das Lineal zeigt beim Drehen den Winkel an.',
+    mc:[{ q:'Wie drehst du das Lineal in einen anderen Winkel?', opts:[
+      { t:'Mit zwei Fingern auf das Lineal legen und drehen', ok:1, erkl:'Mit einem Finger verschiebst du es, mit zwei Fingern drehst du es.' },
+      { t:'Mit dem Stift zweimal kurz auf das Lineal tippen', why:'Der Stift zeichnet am Lineal entlang, er dreht es nicht.' },
+      { t:'Das ganze Tablet drehen, das Lineal bleibt stehen', why:'Das Lineal dreht sich mit der Seite mit.' },
+      { t:'Im Menü 21 die Einstellung „Lineal drehen“ wählen', why:'So eine Einstellung brauchst du nicht, zwei Finger genügen.' }] }] },
+  { n:'16', x:735, y:97, name:'Laserpointer', auftrag:'Wähle den Laserpointer und zeige auf etwas auf deiner Seite. Was passiert mit dem Strich?',
+    tipp:'Perfekt, wenn du deine Präsentation am Beamer zeigst.',
+    mc:[{ q:'Wann ist der Laserpointer sinnvoll?', opts:[
+      { t:'Beim Präsentieren: Er zeigt kurz auf etwas und verschwindet wieder.', ok:1, erkl:'Nichts bleibt auf der Seite zurück.' },
+      { t:'Beim Lernen: Er deckt Lösungen ab, bis du sie wieder antippst.', why:'Das macht das Tape (Werkzeug 8).' },
+      { t:'Beim Schreiben: Er macht deine Handschrift besonders gerade.', why:'Für gerade Linien nimmst du das Lineal (Werkzeug 15).' },
+      { t:'Beim Zeichnen: Er malt dauerhaft in leuchtendem Rot auf die Seite.', why:'Der Laserstrich verschwindet nach kurzer Zeit wieder.' }] }] },
+  { n:'17', x:789, y:97, name:'Timer / Stoppuhr', auftrag:'Starte einen Timer über 2 Minuten. Schreibe in dieser Zeit alle Werkzeuge auf, die du schon kennst.',
+    tipp:'Bildschirmzeit-Limits (Klassenregel „Bewusst statt aus Langeweile“) stellst du dagegen in den iPad-Einstellungen unter Bildschirmzeit ein.',
+    mc:[{ q:'Wobei hilft dir der Timer beim Lernen?', opts:[
+      { t:'Lernzeit und Pausen einteilen, z. B. 20 Minuten lernen, 5 Minuten Pause', ok:1, erkl:'Kurze, feste Lernphasen helfen beim Dranbleiben.' },
+      { t:'Die Bildschirmzeit des iPads automatisch auf zwei Stunden begrenzen', why:'Das geht in den iPad-Einstellungen unter Bildschirmzeit.' },
+      { t:'Die Abgabe im Classroom zur richtigen Uhrzeit automatisch abschicken', why:'Abgeben musst du immer selbst.' },
+      { t:'Den Akku schonen, weil sich das Tablet nach Ablauf selbst ausschaltet', why:'Der Timer schaltet das Tablet nicht aus.' }] }] },
+  { n:'24', x:757, y:48, name:'Aufnahme', auftrag:'Tippe oben auf das Mikrofon und nimm fünf Sekunden lang nur deine eigene Stimme auf. Spiele die Aufnahme dann ab.',
+    tipp:'Beim Abspielen zeigt GoodNotes, was du während der Aufnahme geschrieben hast.',
+    mc:[{ q:'Du möchtest im Unterricht eine Erklärung der Lehrkraft aufnehmen. Was gilt?', opts:[
+      { t:'Nur mit ausdrücklicher Erlaubnis der Lehrkraft', ok:1, erkl:'Grundregel 3: Für Ton- und Videoaufnahmen im Unterricht brauchst du die ausdrückliche Erlaubnis der Lehrkraft.' },
+      { t:'Immer erlaubt, wenn die Aufnahme nur für mich ist', why:'Auch private Aufnahmen brauchen im Unterricht die Erlaubnis.' },
+      { t:'Immer erlaubt, wenn ich sie nach einer Woche lösche', why:'Löschen ändert nichts daran, dass vorher gefragt werden muss.' },
+      { t:'Immer erlaubt, solange niemand im Bild zu sehen ist', why:'Auch reine Tonaufnahmen brauchen die Erlaubnis.' }] }] },
+  { n:'18', x:1168, y:48, name:'Einfügen (Seite, Scan, PDF)', auftrag:'Tippe oben rechts auf das Blatt mit dem Plus. Füge nach dieser Seite eine neue Seite mit der Vorlage „kariert“ ein.',
+    tipp:'Hier kannst du auch Papierblätter scannen oder ein PDF importieren.',
+    mc:[{ q:'Du hast ein Arbeitsblatt auf Papier und willst es in GoodNotes bearbeiten. Was tust du?', opts:[
+      { t:'Über 18 „Dokument scannen“ wählen und das Blatt abfotografieren', ok:1, erkl:'Der Scan wird als Seite eingefügt und du kannst direkt darauf schreiben.' },
+      { t:'Über 11 „Sticker“ wählen und das Blatt als Sticker einkleben', why:'Sticker sind kleine Bildchen, kein Arbeitsblatt.' },
+      { t:'Über 2 „Suchen“ wählen und das Blatt im Internet finden', why:'Die Suche durchsucht nur deine eigenen Dokumente.' },
+      { t:'Über 19 „Lesezeichen“ wählen und das Blatt als Favorit sichern', why:'Ein Lesezeichen markiert nur eine vorhandene Seite.' }] }] },
+  { n:'19', x:1217, y:48, name:'Lesezeichen', auftrag:'Setze auf deiner Seite ein Lesezeichen. Finde die Seite danach in der Miniaturansicht (1) unter „Lesezeichen“ wieder.',
+    tipp:'Lesezeichen kannst du auch umbenennen, z. B. „Vokabeln Unit 3“.',
+    mc:[{ q:'Wofür ist ein Lesezeichen gut?', opts:[
+      { t:'Wichtige Seiten markieren und später schnell wiederfinden', ok:1, erkl:'Zum Beispiel die Seite mit den Hausaufgaben.' },
+      { t:'Seiten vor dem versehentlichen Löschen dauerhaft schützen', why:'Ein Lesezeichen schützt nicht vor dem Löschen.' },
+      { t:'Seiten automatisch an die Lehrkraft im Classroom senden', why:'Abgeben geht nur im Classroom.' },
+      { t:'Seiten automatisch mit dem Namen des Fachs beschriften', why:'Das Lesezeichen beschriftet nichts auf der Seite.' }] }] },
+  { n:'21', x:1316, y:48, name:'Weitere Einstellungen', auftrag:'Tippe auf die drei Punkte und schau dir die Einstellungen an. Prüfe unter Stylus- & Handballenerkennung, dass „Mit einem Finger verschieben“ an ist, und richte in der Bibliothek über das Zahnrad das automatische Backup zu Google Drive ein.',
+    tipp:'Beim Backup als Dateiformat „Goodnotes“ wählen, dann lässt sich alles vollständig wiederherstellen.',
+    mc:[{ q:'Warum richtest du das automatische Backup zu Google Drive ein?', opts:[
+      { t:'Damit deine Hefte sicher sind, falls das Tablet kaputtgeht oder verloren geht', ok:1, erkl:'Dann sind deine Aufzeichnungen nicht verloren.' },
+      { t:'Damit die Lehrkraft jederzeit unbemerkt in deine Hefte hineinschauen kann', why:'Das Backup liegt privat in deinem eigenen Drive.' },
+      { t:'Damit GoodNotes schneller startet und deutlich weniger Akku verbraucht', why:'Das Backup macht die App nicht schneller.' },
+      { t:'Damit deine Hefte nach jeder Stunde automatisch im Classroom landen', why:'Abgaben machst du im Classroom immer selbst.' }] }] },
+  { n:'20', x:1267, y:48, name:'Exportieren und Klassenregeln abgeben', final:1,
+    auftrag:'Öffne den Vertrag „Unsere Tablets, unsere Regeln“ aus dem Classroom in GoodNotes. Trage Name sowie Ort und Datum ein und unterschreibe mit dem Stift. Tippe dann auf 20 → **Exportieren** → **PDF** → **In Dateien sichern** und nenne die Datei «Klassenregeln».',
+    tipp:'Über 20 startest du auch den Präsentationsmodus: Dann sieht die Klasse am Beamer nur deine Seite, nicht die Werkzeugleiste.',
+    mc:[{ q:'In welchem Format gibst du die unterschriebenen Klassenregeln ab?', opts:[
+      { t:'Als PDF: Es sieht überall gleich aus und die Unterschrift ist sichtbar.', ok:1, erkl:'Ein PDF kann jede:r öffnen, auch ohne GoodNotes.' },
+      { t:'Als Goodnotes-Datei: So kann die Lehrkraft sie in Docs bearbeiten.', why:'Docs kann Goodnotes-Dateien nicht öffnen.' },
+      { t:'Als Bild jeder Seite: So muss die Lehrkraft alle einzeln öffnen.', why:'Ein PDF fasst alle Seiten in einer Datei zusammen.' },
+      { t:'Als Text: So wird die Unterschrift in Druckbuchstaben umgewandelt.', why:'Die handschriftliche Unterschrift soll erhalten bleiben.' }] }] }
+];
+
+// ---------- Zustand ----------
+const SAVE_KEY = 'rosas-tablet-v1', PREF_KEY = 'rosas-tablet-prefs';
+function fresh(){ return { vn:'', nn:'', intro:false, g:0, gn:0, done:{}, check:{}, sim:{}, mc:{}, tips:{}, cert:false, ended:false }; }
+let G = fresh();
+try { const t = localStorage.getItem(SAVE_KEY); if (t) G = Object.assign(fresh(), JSON.parse(t)); } catch (e) {}
+function save(){ try { localStorage.setItem(SAVE_KEY, JSON.stringify(G)); } catch (e) {} }
+let prefs = { sfx:true, ts:1 };
+try { Object.assign(prefs, JSON.parse(localStorage.getItem(PREF_KEY) || '{}')); } catch (e) {}
+function savePrefs(){ try { localStorage.setItem(PREF_KEY, JSON.stringify(prefs)); } catch (e) {} }
+const wrongTries = {}, orders = {};
+const key = (st, i) => (st === 0 ? 'g-' + GOOGLE[i].id : 'n-' + GN[i].n);
+const TASKS = st => st === 0 ? GOOGLE : GN;
+const gMainDone = () => GOOGLE.filter(t => !t.late).every((t, i) => G.done[key(0, i)]);
+const gnDone = () => GN.every((t, i) => G.done[key(1, i)]);
+const allDone = () => gMainDone() && gnDone();
+const countDone = st => TASKS(st).filter((t, i) => G.done[key(st, i)]).length;
+
+// ---------- Klang ----------
+let AC = null, bus = null;
+function initAudio(){ if (AC) return; try { AC = new (window.AudioContext || window.webkitAudioContext)(); bus = AC.createGain(); bus.gain.value = prefs.sfx ? 1 : 0; bus.connect(AC.destination); } catch (e) {} }
+function tone(f, dur, o = {}){
+  if (!AC || !prefs.sfx) return;
+  const t0 = AC.currentTime + (o.delay || 0), osc = AC.createOscillator(); osc.type = o.type || 'sine';
+  osc.frequency.setValueAtTime(f, t0); if (o.to) osc.frequency.exponentialRampToValueAtTime(o.to, t0 + dur);
+  const g = AC.createGain(), v = o.gain || .07;
+  g.gain.setValueAtTime(0, t0); g.gain.linearRampToValueAtTime(v, t0 + .02); g.gain.setValueAtTime(v, t0 + Math.max(.02, dur - .06)); g.gain.linearRampToValueAtTime(0, t0 + dur);
+  osc.connect(g); g.connect(bus); osc.start(t0); osc.stop(t0 + dur + .05);
+}
+const sRight = () => { tone(660, .12); tone(880, .12, { delay:.1 }); tone(1320, .2, { delay:.2, gain:.05 }); };
+const sWrong = () => { tone(220, .22, { type:'triangle', to:170, gain:.08 }); };
+const sTap = () => { tone(900, .05, { gain:.035 }); };
+function brabbel(text){ const n = Math.max(1, Math.min(4, Math.round(text.split(/\s+/).length / 5))); for (let i = 0; i < n; i++){ tone(520 + (i % 2) * 90, .12, { to:640, delay:i * .27, gain:.045, type:'triangle' }); tone(700, .1, { to:560, delay:i * .27 + .13, gain:.04, type:'triangle' }); } }
+
+// ---------- Zeichenhilfen ----------
+function poly(pts, fill, stroke, lw){ ctx.beginPath(); ctx.moveTo(pts[0], pts[1]); for (let i = 2; i < pts.length; i += 2) ctx.lineTo(pts[i], pts[i + 1]); ctx.closePath(); if (fill){ ctx.fillStyle = fill; ctx.fill(); } if (stroke){ ctx.strokeStyle = stroke; ctx.lineWidth = lw || 4; ctx.lineJoin = 'round'; ctx.stroke(); } }
+function line(x1, y1, x2, y2, col, lw){ ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.strokeStyle = col; ctx.lineWidth = lw; ctx.lineCap = 'round'; ctx.stroke(); }
+function circ(x, y, r, fill, stroke, lw){ ctx.beginPath(); ctx.arc(x, y, Math.max(.1, r), 0, Math.PI * 2); if (fill){ ctx.fillStyle = fill; ctx.fill(); } if (stroke){ ctx.strokeStyle = stroke; ctx.lineWidth = lw || 4; ctx.stroke(); } }
+function rect(x, y, w, h, fill, stroke, lw){ poly([x, y, x + w, y, x + w, y + h, x, y + h], fill, stroke, lw); }
+function txt(s, x, y, size, col, align, weight){ ctx.font = `${weight || 'bold'} ${size}px "Baloo 2","Trebuchet MS",sans-serif`; ctx.textAlign = align || 'center'; ctx.fillStyle = col || P.ink; ctx.fillText(s, x, y); ctx.textAlign = 'left'; }
+function rnd(seed){ let s = seed; return () => (s = (s * 16807) % 2147483647) / 2147483647; }
+function ctxSwap(c, fn){ const old = ctx; ctx = c; try { fn(); } finally { ctx = old; } }
+function sparkle(x, y, r, col){ const pts = []; for (let i = 0; i < 16; i++){ const a = i * Math.PI / 8, rr = i % 2 ? r * .45 : r; pts.push(x + Math.cos(a) * rr, y + Math.sin(a) * rr); } poly(pts, col, P.ink, 4); }
+
+// ---------- Klassenzimmer ----------
+const bg = document.createElement('canvas'); bg.width = W; bg.height = H;
+const tex = document.createElement('canvas'); tex.width = W; tex.height = H;
+// Tische: hinten Deko + Lehrerpult, vorne die beiden Stationen
+const DESKS = [
+  { id:'deko1', x:330, base:700, w:300, sc:.8 },
+  { id:'pult', x:960, base:690, w:380, sc:.82, label:'Lehrerpult · Zertifikat' },
+  { id:'deko2', x:1590, base:700, w:300, sc:.8 },
+  { id:'t1', x:520, base:1010, w:440, sc:1, st:0, label:'Tisch 1 · Google & Classroom' },
+  { id:'t2', x:1400, base:1010, w:440, sc:1, st:1, label:'Tisch 2 · GoodNotes' }];
+DESKS.forEach(d => { d.top = d.base - 160 * d.sc; d.spot = d.st === 0 ? [d.x + d.w / 2 + 60, 965] : d.st === 1 ? [d.x - d.w / 2 - 60, 965] : [d.x + d.w / 2 + 50, 775]; });
+const POSTER = { x:190, y:150, w:300, h:390 };
+
+function drawRoom(c){
+  ctxSwap(c, () => {
+    ctx.fillStyle = P.wall; ctx.fillRect(0, 0, W, H);
+    poly([0, 0, W, 0, W, 80, 0, 96], '#d9ccb0');
+    poly([0, 600, W, 590, W, H, 0, H], P.lino);
+    for (let i = -8; i <= 14; i++) line(960 + i * 95, 596, 960 + i * 210, H, 'rgba(43,29,46,.14)', 3);
+    for (const y of [700, 830, 980]) line(0, y, W, y - 6, 'rgba(43,29,46,.09)', 2);
+    poly([0, 600, W, 590, W, 618, 0, 630], 'rgba(74,53,87,.35)');
+    // Whiteboard mit Tagesplan
+    poly([640, 110, 1290, 104, 1294, 420, 636, 428], '#9aa3a6', P.ink, 6);
+    poly([656, 124, 1274, 119, 1278, 404, 652, 410], '#fbfbf6');
+    ctx.save(); ctx.translate(690, 185); ctx.rotate(-.01);
+    ctx.fillStyle = P.teal; ctx.font = 'bold 46px "Baloo 2","Trebuchet MS",sans-serif'; ctx.fillText('Tabletklasse 9.1', 0, 0);
+    ctx.fillStyle = P.ink; ctx.font = '28px "Trebuchet MS",sans-serif';
+    ctx.fillText('1. Classroom, Docs, Sheets, Präsentationen', 10, 56);
+    ctx.fillText('2. GoodNotes: Werkzeuge 1 bis 24', 10, 98);
+    ctx.fillText('3. Zertifikat + Abgabe im Classroom', 10, 140);
+    ctx.fillStyle = P.orange; ctx.font = 'bold 26px Menlo,"Courier New",monospace'; ctx.fillText('JJJJ-MM-TT-Inhalt-Name', 10, 186);
+    ctx.restore();
+    poly([660, 404, 1280, 398, 1284, 418, 656, 424], '#b9b9b0', P.ink, 4);
+    poly([760, 396, 800, 394, 800, 404, 760, 406], P.rose); poly([820, 395, 860, 393, 860, 403, 820, 405], P.teal);
+    // Regelplakat (Unsere Tablets, unsere Regeln)
+    const p = POSTER;
+    poly([p.x, p.y, p.x + p.w, p.y - 4, p.x + p.w + 4, p.y + p.h, p.x + 2, p.y + p.h + 4], '#fffdf6', P.ink, 5);
+    circ(p.x + p.w / 2, p.y + 6, 7, P.rose, P.ink, 2);
+    txt('Unsere Tablets,', p.x + p.w / 2, p.y + 48, 30, P.teal); txt('unsere Regeln', p.x + p.w / 2, p.y + 80, 30, P.teal);
+    line(p.x + 30, p.y + 96, p.x + p.w - 30, p.y + 95, P.orange, 4);
+    for (let r = 0; r < 2; r++) for (let q = 0; q < 2; q++) poly([p.x + 24 + q * 132, p.y + 112 + r * 52, p.x + 148 + q * 132, p.y + 112 + r * 52, p.x + 148 + q * 132, p.y + 156 + r * 52, p.x + 24 + q * 132, p.y + 156 + r * 52], null, P.teal, 3);
+    for (let r = 0; r < 5; r++) for (let q = 0; q < 2; q++){ const x = p.x + 24 + q * 132, y = p.y + 226 + r * 30; line(x, y, x, y + 22, P.orange, 5); line(x + 12, y + 7, x + 110, y + 7, 'rgba(43,29,46,.35)', 3); line(x + 12, y + 16, x + 80, y + 16, 'rgba(43,29,46,.25)', 3); }
+    // Fenster mit Fernsehturm
+    poly([1420, 110, 1800, 104, 1806, 430, 1418, 438], P.cloud, P.ink, 6);
+    poly([1440, 128, 1784, 123, 1788, 412, 1438, 418], P.sky);
+    poly([1440, 360, 1500, 356, 1500, 330, 1540, 328, 1540, 350, 1600, 346, 1600, 320, 1650, 318, 1650, 342, 1720, 338, 1720, 326, 1786, 322, 1788, 412, 1438, 418], '#7d9aa6');
+    line(1690, 340, 1690, 190, '#5d7682', 7); circ(1690, 230, 14, '#5d7682'); line(1690, 190, 1690, 160, '#5d7682', 3);
+    line(1612, 104, 1612, 432, P.ink, 6); line(1420, 270, 1802, 264, P.ink, 6);
+    // Uhr und Tür
+    circ(1360, 66, 36, P.cloud, P.ink, 5); line(1360, 66, 1360, 42, P.ink, 4); line(1360, 66, 1376, 74, P.ink, 4);
+    poly([18, 190, 110, 204, 112, 600, 14, 630], P.woodD, P.ink, 6); poly([32, 220, 98, 231, 100, 580, 28, 602], P.woodL, P.ink, 4); circ(88, 410, 8, P.brass, P.ink, 3);
+    // Ladeschrank rechts
+    poly([1840, 300, W, 296, W, 600, 1834, 604], '#9aa6ab', P.ink, 5);
+    for (let i = 0; i < 3; i++) line(1850, 350 + i * 80, W, 346 + i * 80, 'rgba(43,29,46,.4)', 3);
+  });
+}
+
+// Tablet flach auf dem Tisch (Klassenregel „Flach auf dem Tisch“): Parallelogramm mit Bildschirminhalt
+function flatTablet(d, kind, time){
+  const s = d.sc, tw = 190 * s, depthY = 62 * s, skew = 26 * s, x0 = d.x - tw / 2 + skew / 2, y0 = d.top - depthY - 4 * s;
+  poly([x0, y0, x0 + tw, y0, x0 + tw - skew, y0 + depthY, x0 - skew, y0 + depthY], '#1d1d1f', P.ink, 3);
+  ctx.save();
+  // Bildschirmkoordinaten 400 × 130 auf das Parallelogramm abbilden
+  const b = 6 * s, sx = (tw - 2 * b) / 400, sy = (depthY - 2 * b) / 130;
+  ctx.transform(sx, 0, -skew / depthY * sy, sy, x0 + b, y0 + b);
+  ctx.beginPath(); ctx.rect(0, 0, 400, 130); ctx.clip();
+  if (kind === 'google'){
+    ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, 400, 130);
+    ctx.fillStyle = '#f3f6fc'; ctx.fillRect(220, 8, 170, 116);
+    const cols = ['#7b5ea7', '#ea4335', '#34a853', '#1e8e3e', '#4285f4', '#a142f4', '#0f9d58', '#fbbc05', '#4285f4'];
+    for (let i = 0; i < 9; i++){ ctx.fillStyle = cols[i]; ctx.fillRect(238 + (i % 3) * 52, 18 + Math.floor(i / 3) * 36, 30, 24); }
+    ctx.fillStyle = '#4285f4'; ctx.font = 'bold 34px sans-serif'; ctx.fillText('Google', 40, 60);
+    ctx.strokeStyle = '#dfe1e5'; ctx.lineWidth = 4; ctx.strokeRect(30, 80, 170, 22);
+  } else {
+    ctx.fillStyle = '#2d2d2d'; ctx.fillRect(0, 0, 400, 130);
+    ctx.fillStyle = '#2f5fae'; ctx.fillRect(0, 0, 400, 22);
+    ctx.fillStyle = '#f2f2f2'; ctx.fillRect(0, 22, 400, 20);
+    for (let i = 0; i < 14; i++){ ctx.fillStyle = i === 3 ? '#4fa3d9' : '#666'; ctx.fillRect(40 + i * 18, 27, 10, 10); }
+    ctx.strokeStyle = '#eee'; ctx.lineWidth = 3;
+    for (let r = 0; r < 4; r++){ ctx.beginPath(); for (let x = 30; x < 340; x += 6) ctx.lineTo(x, 62 + r * 18 + Math.sin(x * .3 + r) * 3); ctx.stroke(); }
+  }
+  ctx.restore();
+  // Glanz
+  line(x0 + tw * .6, y0 + 6, x0 + tw * .6 - skew * .5, y0 + depthY * .5, 'rgba(255,255,255,.25)', 4);
+}
+function drawDesk(d, time){
+  const s = d.sc, x = d.x, b = d.base, w = d.w, topY = d.top, pult = d.id === 'pult';
+  // Stuhl hinter dem Tisch
+  if (!pult){ poly([x - 60 * s, topY - 70 * s, x + 60 * s, topY - 70 * s, x + 56 * s, topY - 4, x - 56 * s, topY - 4], P.violet, P.ink, 4); }
+  // Beine bzw. Korpus
+  if (pult){ poly([x - w / 2 + 14, topY + 14, x + w / 2 - 14, topY + 14, x + w / 2 - 18, b, x - w / 2 + 18, b], P.wood, P.ink, 5); line(x, topY + 30, x, b - 10, 'rgba(43,29,46,.4)', 4); }
+  else for (const k of [-1, 1]){ poly([x + k * (w / 2 - 22) - 8, topY + 12, x + k * (w / 2 - 22) + 8, topY + 12, x + k * (w / 2 - 22) + 7, b, x + k * (w / 2 - 22) - 7, b], '#8b8f94', P.ink, 4); }
+  // Platte (perspektivisch)
+  poly([x - w / 2 + 26 * s, topY - 76 * s, x + w / 2 - 26 * s, topY - 76 * s, x + w / 2 + 4, topY, x - w / 2 - 4, topY], pult ? P.woodL : P.woodXL, P.ink, 5);
+  poly([x - w / 2 - 4, topY, x + w / 2 + 4, topY, x + w / 2 + 4, topY + 16, x - w / 2 - 4, topY + 16], pult ? P.woodD : P.wood, P.ink, 4);
+  if (d.st === 0) flatTablet(d, 'google', time);
+  if (d.st === 1) flatTablet(d, 'goodnotes', time);
+  if (pult){
+    // Zertifikat auf dem Pult
+    const ready = allDone();
+    poly([x - 70, topY - 50, x + 10, topY - 54, x + 20, topY - 10, x - 66, topY - 6], '#fffdf6', P.ink, 3);
+    line(x - 54, topY - 36, x + 2, topY - 38, P.brass, 3); line(x - 52, topY - 24, x - 4, topY - 26, 'rgba(43,29,46,.35)', 3);
+    circ(x + 70, topY - 30, 18, P.rose, P.ink, 3); line(x + 70, topY - 12, x + 70, topY + 4, P.greenD, 4);
+    if (ready) sparkle(x - 28, topY - 70, 26 + Math.sin(time * 4) * 4, P.brassL);
+  }
+  // Rucksack neben den Deko-Tischen (Klassenregel „Zu Beginn im Rucksack“)
+  if (!d.st && !pult){
+    const bx = x + w / 2 + 34 * s, by = b;
+    poly([bx - 30 * s, by, bx + 30 * s, by, bx + 34 * s, by - 76 * s, bx - 34 * s, by - 80 * s], d.id === 'deko1' ? P.orange : P.tealD, P.ink, 4);
+    poly([bx - 20 * s, by - 10 * s, bx + 20 * s, by - 10 * s, bx + 20 * s, by - 40 * s, bx - 20 * s, by - 40 * s], 'rgba(255,255,255,.25)', P.ink, 3);
+    ctx.beginPath(); ctx.arc(bx, by - 80 * s, 14 * s, Math.PI, 0); ctx.strokeStyle = P.ink; ctx.lineWidth = 4; ctx.stroke();
+  }
+  // Schild
+  if (d.label){
+    const done = d.st === 0 ? gMainDone() && (!G.cert || G.done['g-abgabe']) : d.st === 1 ? gnDone() : G.cert;
+    ctx.save(); ctx.translate(x, topY + 56 * s); ctx.rotate(d.st === 1 ? .015 : -.015);
+    ctx.font = `bold ${Math.round(27 * s)}px "Baloo 2","Trebuchet MS",sans-serif`;
+    const tw = ctx.measureText(d.label).width + 34 * s;
+    poly([-tw / 2, -25 * s, tw / 2, -27 * s, tw / 2 + 2, 19 * s, -tw / 2 + 2, 21 * s], done ? '#dff0d2' : P.cloud, P.ink, 4);
+    txt(d.label, 0, 8 * s, Math.round(27 * s), P.ink);
+    ctx.restore();
+    if (done){ sparkle(x + w / 2 - 20, topY - 60 * s, 30 * s, P.brassL); txt('✓', x + w / 2 - 20, topY - 48 * s, 30 * s, P.ink); }
+  }
+}
+
+// ---------- Rosa (freundliche Karikatur, wie im Säurelabor, hier mit Strickjacke und Tablet) ----------
+const rosa = { x:150, y:860, face:1, walking:false, talk:false, tx:null, ty:null, onArrive:null, point:false };
+function depth(y){ return .84 + (y - 760) / 220 * .2; }
+function drawRosa(a, beat, sc){
+  const s = sc != null ? sc : depth(a.y) * 1.02, moving = a.walking;
+  const sw = moving ? Math.sin((beat % 2) * Math.PI) : 0, b = Math.pow(1 - (beat % 1), 3);
+  const bob = moving ? Math.abs(sw) * 6 : b * 2;
+  ctx.save(); ctx.translate(a.x, a.y); ctx.scale(s * a.face, s);
+  ctx.save(); ctx.scale(1, .18); circ(0, 0, 60, 'rgba(26,18,32,.3)'); ctx.restore();
+  for (const k of [-1, 1]){ ctx.save(); ctx.translate(k * 12, -30 - bob * .3); ctx.rotate(sw * .35 * k); poly([-7, 0, 7, 0, 6, 26, -6, 26], '#3b2a33', P.ink, 3); poly([-10, 22, 18, 22, 20, 34, -10, 35], P.ink); ctx.restore(); }
+  ctx.translate(0, -bob);
+  poly([-40, -30, 40, -30, 30, -130, -28, -132], P.violetD, P.ink, 5);                  // langer Rock
+  poly([-30, -120, 32, -120, 26, -204, -24, -206], P.blouse, P.ink, 4);                // Bluse
+  poly([-44, -64, -8, -66, -12, -202, -36, -204], P.cardigan, P.ink, 5);               // Strickjacke links
+  poly([12, -66, 46, -64, 38, -202, 14, -202], P.cardigan, P.ink, 5);                  // Strickjacke rechts
+  for (const y of [-100, -130, -160]) circ(16, y, 3.5, P.brassL, P.ink, 2);
+  // hinterer Arm mit Tablet
+  ctx.save(); ctx.translate(-30, -190); ctx.rotate(.25 - sw * .35);
+  poly([-8, 0, 8, 0, 7, 62, -7, 62], P.cardiganD, P.ink, 4); circ(0, 66, 8, P.skinN, P.ink, 3);
+  poly([-18, 48, 16, 46, 18, 96, -16, 98], '#1d1d1f', P.ink, 3); poly([-13, 53, 11, 51, 13, 91, -11, 93], '#8fd0d6'); ctx.restore();
+  poly([-20, -204, 0, -184, 22, -204, 0, -196], P.blouse, P.ink, 3);
+  circ(-22, -180, 9, P.rose, P.ink, 3); circ(-22, -180, 4, P.roseL); poly([-22, -170, -14, -164, -24, -162], P.greenD, P.ink, 2);
+  // vorderer Arm: winkt beim Reden, zeigt nach oben beim Erklären
+  const wave = a.point ? -2.75 : a.talk ? -1.9 + Math.sin(beat * Math.PI * 2) * .25 : -.15 + sw * .35;
+  ctx.save(); ctx.translate(26, -194); ctx.rotate(wave); poly([-8, 0, 8, 0, 7, 60, -7, 60], P.cardigan, P.ink, 4); circ(0, 66, 9, P.skinN, P.ink, 3); ctx.restore();
+  // Kopf mit Hut und Rose
+  ctx.save(); ctx.translate(2, -206); ctx.rotate(moving ? 0 : (b - .5) * .03);
+  poly([-7, 2, 9, 2, 9, -12, -7, -12], P.skinN, P.ink, 3);
+  circ(-18, -86, 26, P.hair, P.ink, 4);
+  poly([-40, -20, -36, -70, -10, -92, 26, -90, 42, -62, 44, -30, 30, -44, -24, -40], P.hair, P.ink, 4);
+  poly([-30, -8, 28, -6, 40, -36, 36, -66, 4, -80, -28, -70, -38, -38], P.skinN, P.ink, 5);
+  poly([-30, -62, -6, -84, 30, -78, 40, -54, 20, -66, 2, -60, -14, -66, -26, -50], P.hair, P.ink, 3);
+  circ(20, -40, 9, '#fff', P.ink, 3); circ(23, -39, 4.5, P.ink); circ(24.5, -41, 1.6, '#fff');
+  line(10, -55, 30, -58, P.ink, 4);
+  circ(14, -20, 7, 'rgba(232,102,122,.45)');
+  poly([38, -34, 46, -24, 36, -22], P.skinN, P.ink, 3);
+  if (a.talk && (beat % 1) < .5) poly([18, -12, 34, -14, 30, -4, 20, -4], P.ink); else { ctx.beginPath(); ctx.arc(26, -16, 8, .15 * Math.PI, .85 * Math.PI); ctx.strokeStyle = P.ink; ctx.lineWidth = 3; ctx.stroke(); }
+  poly([-58, -76, 58, -84, 62, -70, -54, -62], P.hat, P.ink, 4);
+  poly([-30, -78, 30, -84, 26, -118, -22, -118], P.hat, P.ink, 4);
+  poly([-28, -88, 28, -94, 28, -84, -28, -78], P.rose);
+  circ(-24, -96, 11, P.rose, P.ink, 3); circ(-24, -96, 5, P.roseL);
+  ctx.restore();
+  ctx.restore();
+}
+
+// ---------- Ablauf ----------
+let busy = false, speech = null, started = false;
+const tweens = [];
+function tween(o, k, to, dur){ return new Promise(res => tweens.push({ o, k, from:o[k], to, dur, t:0, res })); }
+function walkTo(x, y){ x = Math.max(120, Math.min(1800, x)); y = Math.max(760, Math.min(1000, y)); return new Promise(res => { rosa.tx = x; rosa.ty = y; rosa.walking = true; rosa.onArrive = res; }); }
+function say(text, ms){
+  return new Promise(res => {
+    if (speech) speech.res();
+    rosa.talk = true; brabbel(text);
+    speech = { text, t:0, dur:(ms || Math.max(1900, 1000 + text.length * 55)) / 1000, res:() => { rosa.talk = false; speech = null; res(); } };
+  });
+}
+async function run(fn){ if (busy || !started) return; busy = true; setLabel(''); try { await fn(); } catch (e) { console.error(e); } busy = false; save(); updateGoal(); }
+const cam = { k:1, x:W / 2, y:H / 2, fade:0 };
+
+async function visit(d){
+  await walkTo(d.spot[0], d.spot[1]); rosa.face = d.x < rosa.x ? -1 : 1;
+  if (d.id === 'pult') return pultClick();
+  const st = d.st;
+  if (st === 0 && gMainDone() && !G.cert && !gnDone()) await say('Hier bist du schon fertig. Jetzt wartet Tisch 2 mit GoodNotes auf dich!', 2600);
+  else if (st === 0 && G.cert && !G.done['g-abgabe']) await say('Zertifikat gespeichert? Dann üben wir jetzt das Abgeben im Classroom.');
+  else if (st === 0 && !countDone(0)) await say('Schau, das Tablet liegt flach auf dem Tisch, das Display gut sichtbar. So machen wir das in der 9.1!');
+  else if (st === 1 && !countDone(1)) await say('Das ist GoodNotes. Ich laufe die Werkzeugleiste von 1 bis 24 ab und gebe dir zu jedem Werkzeug einen Auftrag.');
+  else await say(['Weiter geht’s!', 'Schön, dass du wieder da bist.', 'Auf zum nächsten Schritt!'][Math.floor(Math.random() * 3)], 1500);
+  await Promise.all([tween(cam, 'k', 2.4, .6), tween(cam, 'x', d.x, .6), tween(cam, 'y', d.top - 60, .6), tween(cam, 'fade', .75, .6)]);
+  openStation(st);
+}
+async function leaveStation(){ await Promise.all([tween(cam, 'k', 1, .5), tween(cam, 'x', W / 2, .5), tween(cam, 'y', H / 2, .5), tween(cam, 'fade', 0, .5)]); }
+
+// ---------- Tischfenster ----------
+let cur = -1, ti = 0;                          // aktueller Tisch, aktuelle Aufgabe
+const gnRosa = { x:70, tx:70, walking:false, face:1 };
+const gnX = t => Math.max(70, Math.min(1330, t.x));
+function available(st, i){
+  if (st === 0){ const t = GOOGLE[i]; if (t.late) return G.cert; return i === 0 || G.done[key(0, i - 1)]; }
+  return i === 0 || G.done[key(1, i - 1)];
+}
+function firstOpen(st){ const L = TASKS(st); for (let i = 0; i < L.length; i++) if (!G.done[key(st, i)] && available(st, i)) return i; for (let i = L.length - 1; i >= 0; i--) if (available(st, i)) return i; return 0; }
+function openStation(st){
+  cur = st; ti = firstOpen(st);
+  $('#stLp').textContent = st + 1; $('#stTitle').textContent = st === 0 ? 'Tisch 1 · Google, Classroom, Docs, Sheets, Präsentationen' : 'Tisch 2 · Die GoodNotes-Werkzeugleiste';
+  $('#simWrap').hidden = st !== 0; $('#simMsg').hidden = st !== 0; $('#gcv').hidden = st !== 1; $('#stCap').hidden = st !== 1;
+  if (st === 1){ gnRosa.x = gnRosa.tx = gnX(GN[ti]); gnRosa.walking = false; }
+  const el = $('#st'); el.hidden = false; el.classList.remove('pop'); void el.offsetWidth; el.classList.add('pop');
+  showTask(); $('#stClose').focus();
+}
+function showTask(){
+  if (cur === 0) simReset();
+  if (cur === 1){ gnRosa.tx = gnX(GN[ti]); gnRosa.walking = Math.abs(gnRosa.tx - gnRosa.x) > 2; $('#stCap').innerHTML = `Rosa steht bei <b>${esc(GN[ti].n)} · ${esc(GN[ti].name)}</b>. Probiere das Werkzeug gleichzeitig auf deinem Tablet in GoodNotes aus.`; }
+  renderPanel(); $('#panel').scrollTop = 0;
+}
+async function closeStation(){
+  if (cur < 0) return;
+  const st = cur; $('#st').hidden = true; cur = -1; save();
+  busy = true; await leaveStation(); busy = false;
+  run(async () => {
+    if (G.done['g-abgabe'] && !G.ended){ G.ended = true; await say('Du hast es geschafft! Jetzt nur noch alles echt im Classroom abgeben.'); $('#end').hidden = false; return; }
+    if (allDone() && !G.cert) return say('Alles erledigt! Am Lehrerpult wartet dein Zertifikat. Tippe auf das Pult.');
+    if (st === 0 && gMainDone() && !gnDone()) return say('Tisch 1 geschafft! Jetzt geht es zu Tisch 2: GoodNotes.');
+  });
+  updateGoal();
+}
+
+// MC: richtige Antwort reihum an verschiedenen Plätzen, nie zweimal hintereinander gleich
+function shuffled(a){ a = a.slice(); for (let i = a.length - 1; i > 0; i--){ const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+let posBag = [], lastPos = -1;
+function nextPos(n){ if (!posBag.length) posBag = shuffled([0, 1, 2, 3]); let k = posBag.length - 1; if (posBag[k] === lastPos && k > 0) k = 0; const p = posBag.splice(k, 1)[0] % n; lastPos = p; return p; }
+function order(k, n){ if (orders[k]) return orders[k]; const wrong = shuffled([...Array(n).keys()].slice(1)), slot = nextPos(n), a = []; let w = 0; for (let i = 0; i < n; i++) a.push(i === slot ? 0 : wrong[w++]); return (orders[k] = a); }
+function dynMC(m){
+  if (m.dyn !== 'name') return m;
+  const N = NN(), d = isoToday();
+  return { q:'Welcher Name für dein Textdokument folgt der Regel Jahr-Monat-Tag-Inhalt-Name?', opts:[
+    { t:`${d}-Textdokument-${N}`, ok:1, erkl:'Datum vorne (Jahr-Monat-Tag), dann der Inhalt, am Ende dein Nachname.' },
+    { t:`${dmyToday()}-Textdokument-${N}`, why:'Das Datum steht verkehrt herum: erst das Jahr, dann der Monat, dann der Tag.' },
+    { t:`${d}-${N}-Textdokument`, why:'Erst kommt der Inhalt, dein Name steht ganz am Ende.' },
+    { t:`Textdokument-${N}-${d}`, why:'Das Datum steht ganz vorne, damit sich alles nach Datum sortiert.' }] };
+}
+function mcHTML(k, m){
+  m = dynMC(m);
+  if (G.mc[k]){ const ok = m.opts.find(o => o.ok); return `<div class="reveal"><div class="lbl">Richtig</div><div class="ans">${fmt(ok.t)}</div>${ok.erkl ? '<p>' + fmt(ok.erkl) + '</p>' : ''}</div>`; }
+  const tried = wrongTries[k] || new Set();
+  let h = `<div class="mc"><div class="q">${fmt(m.q)}</div><div class="opts">`;
+  for (const i of order(k, m.opts.length)){
+    const o = m.opts[i], w = tried.has(i);
+    h += `<button class="opt${w ? ' wrong' : ''}" data-mc="${k}" data-i="${i}"${w ? ' aria-disabled="true"' : ''}>${fmt(o.t)}</button>`;
+    if (w) h += `<div class="why">${fmt(o.why || 'Das passt nicht.')}</div>`;
+  }
+  return h + '</div></div>';
+}
+function taskReady(st, i){
+  const t = TASKS(st)[i], k = key(st, i);
+  return (!t.sim || G.sim[k]) && G.check[k] && t.mc.every((m, j) => G.mc[k + '-' + j]);
+}
+function renderPanel(){
+  const st = cur, L = TASKS(st), t = L[ti], k = key(st, ti);
+  let h = '<div class="chips">' + L.map((x, i) => {
+    const d = G.done[key(st, i)], av = available(st, i);
+    const lab = st === 0 ? x.short : x.n;
+    return `<button data-go="${i}" class="${i === ti ? 'on' : d ? 'done' : ''}"${av ? '' : ' disabled'} title="${esc(st === 0 ? x.title : x.name)}">${d ? '✓ ' : ''}${esc(lab)}</button>`;
+  }).join('') + '</div>';
+  h += `<h3>${st === 1 ? '<span class="nr">' + esc(t.n) + '</span>' : ''}${esc(st === 0 ? t.title : t.name)}</h3>`;
+  if (t.rosa) h += `<div class="ctx"><b class="who">Rosa:</b> ${fmt(t.rosa)}</div>`;
+  h += `<div class="ctx"><b class="who">Dein Auftrag auf dem Tablet:</b> ${fmt(t.auftrag)}</div>`;
+  if (t.sim) h += `<div class="simstate${G.sim[k] ? ' ok' : ''}">${G.sim[k] ? '✓ Links auf dem Bildschirm geschafft.' : 'Probiere die Schritte zuerst links auf dem Bildschirm aus.'}</div>`;
+  h += `<label class="check${G.check[k] ? ' ok' : ''}"><input type="checkbox" data-check="${k}"${G.check[k] ? ' checked' : ''}> Auf meinem Tablet erledigt</label>`;
+  h += G.tips[k] ? `<div class="tip"><b>Tipp:</b> ${fmt(t.tipp)}</div>` : `<button class="tipbtn" data-tip="${k}">💡 Tipp anzeigen</button>`;
+  t.mc.forEach((m, j) => { h += mcHTML(k + '-' + j, m); });
+  if (taskReady(st, ti)){
+    if (!G.done[k]){ G.done[k] = true; save(); sRight(); updateGoal(); }
+    const nx = ti + 1 < L.length && available(st, ti + 1) ? ti + 1 : -1;
+    if (nx >= 0) h += `<button class="next" data-go="${nx}">Weiter zu ${esc(st === 0 ? L[nx].title : L[nx].n + ' · ' + L[nx].name)}</button>`;
+    else if (st === 0 && !G.cert) h += `<p class="wait">Tisch 1 ist fertig. Als Nächstes: Tisch 2 (GoodNotes), danach das Zertifikat am Lehrerpult. Das Abgeben üben wir ganz zum Schluss hier.</p>`;
+    h += '<button class="back" data-close="1">Zurück ins Klassenzimmer</button>';
+  } else {
+    const miss = [];
+    if (t.sim && !G.sim[k]) miss.push('die Schritte links');
+    if (!G.check[k]) miss.push('den Auftrag auf deinem Tablet');
+    if (!t.mc.every((m, j) => G.mc[k + '-' + j])) miss.push('die Frage' + (t.mc.length > 1 ? 'n' : ''));
+    h += `<p class="wait">Noch offen: ${miss.join(', ')}.</p>`;
+  }
+  $('#panel').innerHTML = h;
+}
+$('#panel').addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  initAudio();
+  if (b.dataset.go != null){ ti = +b.dataset.go; sTap(); showTask(); return; }
+  if (b.dataset.close){ closeStation(); return; }
+  if (b.dataset.tip){ G.tips[b.dataset.tip] = 1; save(); renderPanel(); return; }
+  if (b.dataset.mc){
+    const k = b.dataset.mc, i = +b.dataset.i, j = +k.split('-').pop();
+    const L = TASKS(cur), t = L[ti], m = dynMC(t.mc[j]);
+    if ((wrongTries[k] || new Set()).has(i)) return;
+    if (m.opts[i].ok){ G.mc[k] = { first:!wrongTries[k] }; sRight(); }
+    else { (wrongTries[k] = wrongTries[k] || new Set()).add(i); G.wrong = (G.wrong || 0) + 1; sWrong(); }
+    save(); const y = $('#panel').scrollTop; renderPanel(); $('#panel').scrollTop = y;
+  }
+});
+$('#panel').addEventListener('change', e => {
+  const c = e.target.dataset.check; if (!c) return;
+  G.check[c] = e.target.checked; save(); const y = $('#panel').scrollTop; renderPanel(); $('#panel').scrollTop = y;
+});
+
+// ---------- Tablet-Simulation (Tisch 1) ----------
+let simStep = 0, simWrong = 0, simSel = false;
+const ICON = {
+  konto:() => `<span class="ava" style="width:2.6em;height:2.6em">${esc((G.vn || '?')[0].toUpperCase())}</span>`,
+  gmail:'<svg viewBox="0 0 48 48"><rect x="6" y="12" width="36" height="26" rx="3" fill="#fff" stroke="#ddd"/><path d="M8 14l16 13 16-13" fill="none" stroke="#ea4335" stroke-width="5" stroke-linejoin="round"/><path d="M8 14v24" stroke="#4285f4" stroke-width="5"/><path d="M40 14v24" stroke="#34a853" stroke-width="5"/></svg>',
+  drive:'<svg viewBox="0 0 48 48"><path d="M17 8h14l13 22H30z" fill="#fbbc05"/><path d="M17 8L4 30l7 12 13-22z" fill="#34a853"/><path d="M11 42h26l7-12H18z" fill="#4285f4"/></svg>',
+  classroom:'<svg viewBox="0 0 48 48"><rect x="4" y="8" width="40" height="32" rx="3" fill="#f9bb2d"/><rect x="8" y="12" width="32" height="24" fill="#1e8e3e"/><circle cx="24" cy="21" r="4" fill="#fff"/><path d="M16 32c1-5 4-7 8-7s7 2 8 7z" fill="#fff"/><rect x="30" y="33" width="8" height="3" fill="#fff"/></svg>',
+  docs:'<svg viewBox="0 0 48 48"><path d="M12 4h17l9 9v31H12z" fill="#4285f4"/><path d="M29 4v9h9z" fill="#a1c2fa"/><path d="M17 24h14M17 29h14M17 34h9" stroke="#fff" stroke-width="2.5"/></svg>',
+  gemini:'<svg viewBox="0 0 48 48"><defs><linearGradient id="gm" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#4285f4"/><stop offset=".5" stop-color="#a142f4"/><stop offset="1" stop-color="#ea4335"/></linearGradient></defs><path d="M24 4c2 11 9 18 20 20-11 2-18 9-20 20-2-11-9-18-20-20 11-2 18-9 20-20z" fill="url(#gm)"/></svg>',
+  sheets:'<svg viewBox="0 0 48 48"><path d="M12 4h17l9 9v31H12z" fill="#0f9d58"/><path d="M29 4v9h9z" fill="#87ceac"/><rect x="17" y="22" width="16" height="14" fill="none" stroke="#fff" stroke-width="2.5"/><path d="M17 29h16M25 22v14" stroke="#fff" stroke-width="2.5"/></svg>',
+  slides:'<svg viewBox="0 0 48 48"><path d="M12 4h17l9 9v31H12z" fill="#f4b400"/><path d="M29 4v9h9z" fill="#fadb8a"/><rect x="17" y="22" width="16" height="12" fill="none" stroke="#fff" stroke-width="2.5"/></svg>',
+  kalender:'<svg viewBox="0 0 48 48"><rect x="6" y="6" width="36" height="36" rx="5" fill="#4285f4"/><rect x="10" y="14" width="28" height="24" rx="2" fill="#fff"/><text x="24" y="33" text-anchor="middle" font-size="15" font-weight="bold" fill="#4285f4" font-family="sans-serif">31</text></svg>',
+  link:'<svg viewBox="0 0 24 24"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1" fill="none" stroke="#444" stroke-width="2"/></svg>',
+  file:'<svg viewBox="0 0 24 24"><path d="M6 2h8l4 4v16H6z" fill="none" stroke="#444" stroke-width="2"/><path d="M12 10v7M9 14l3 3 3-3" fill="none" stroke="#444" stroke-width="2"/></svg>',
+  pdf:'<svg viewBox="0 0 48 48"><path d="M12 4h17l9 9v31H12z" fill="#ea4335"/><text x="25" y="34" text-anchor="middle" font-size="11" font-weight="bold" fill="#fff" font-family="sans-serif">PDF</text></svg>'
+};
+const ic = n => typeof ICON[n] === 'function' ? ICON[n]() : ICON[n];
+const DOT9 = '<svg viewBox="0 0 24 24" width="1.4em" height="1.4em">' + [5, 12, 19].flatMap(y => [5, 12, 19].map(x => `<circle cx="${x}" cy="${y}" r="2.1" fill="#5f6368"/>`)).join('') + '</svg>';
+const KIND = { docs:{ app:'docs', label:'Docs', unb:'Unbenanntes Dokument', inh:INHALT.text }, sheets:{ app:'sheets', label:'Sheets', unb:'Unbenannte Tabelle', inh:INHALT.sheet }, slides:{ app:'slides', label:'Präsentationen', unb:'Unbenannte Präsentation', inh:INHALT.slide } };
+const POST = `<p>Liebe 9.1,</p><p>anbei findet ihr das Material und die Abgabemöglichkeiten der heutigen Sitzung. Gebt eure in Goodnotes unterschriebenen Klassenregeln, euer „Rosas Tablet“-Zertifikat, eine Textdatei, eine Präsentationsdatei und eine Tabellenkalkulationsdatei nach den Benennungsregeln (Jahr-Monat-Tag-Inhalt-Name.Endung, also z. B. 2026-11-23-Textdokument-Poremski.docx, etc.) hier unter Abgabe ab.</p><p>Vertiefungsaufgabe: Erstellt in Gruppen geteilte Dokumente für mögliche Kooperationen bei der Englisch-Klassenarbeitsersatzleistung im Frühjahr 2027.</p><p>Herzliche Grüße<br>Simon Poremski</p>`;
+const TASKTITLE = 'Tabletworkshop (Classroom, Goodnotes und Tabletregeln)';
+const topBar = (title, sub, iconName) => `<div class="g-top"><div class="ttl">${iconName ? '<span style="width:1.7em;display:inline-flex">' + ic(iconName) + '</span>' : ''}<span>${title}${sub ? '<span class="sub">' + sub + '</span>' : ''}</span></div><button class="g-dots" data-hit="dots" aria-label="Google-Apps">${DOT9}</button><span class="ava">${esc((G.vn || '?')[0].toUpperCase())}</span></div>`;
+function screen(scr){
+  const [a, b] = scr.split('-');
+  if (scr === 'home' || scr === 'launcher'){
+    let h = `<div class="g-top"><div class="ttl" style="font-size:.95em;color:#444">Gmail &nbsp; Bilder</div><button class="g-dots" data-hit="dots" aria-label="Google-Apps">${DOT9}</button><span class="ava">${esc((G.vn || '?')[0].toUpperCase())}</span></div><div class="google"><span>G</span><span>o</span><span>o</span><span>g</span><span>l</span><span>e</span></div><div class="gsearch">Suchen oder URL eingeben</div>`;
+    if (scr === 'launcher') h += `<div class="g-launch"><h4>Meine Favoriten</h4><div class="g-grid">${APPS.map(([id, n]) => `<button class="g-app" data-hit="app-${id}">${ic(id)}<span>${n}</span></button>`).join('')}</div></div>`;
+    return h;
+  }
+  if (scr === 'cr-home') return topBar('Classroom', '', 'classroom') + `<div class="cr-cards">
+    <button class="cr-card" data-hit="course"><div class="bn" style="background:#3c7d5a"><b>Klasse 9.1</b>Klassengemeinschaft</div><div class="ft"></div></button>
+    <button class="cr-card" data-hit="c2"><div class="bn" style="background:#c26401"><b>English 9.1 2026/27</b>Englischunterricht</div><div class="ft"></div></button>
+    <button class="cr-card" data-hit="c3"><div class="bn" style="background:#1967d2"><b>Mathematik 9.1</b>&nbsp;</div><div class="ft"></div></button>
+    <button class="cr-card" data-hit="c4"><div class="bn" style="background:#7b5ea7"><b>Deutsch 9.1</b>&nbsp;</div><div class="ft"></div></button></div>`;
+  const crHead = tab => topBar('Klasse 9.1', 'Klassengemeinschaft', 'classroom') + `<div class="cr-tabs"><button data-hit="tab-stream" class="${tab === 's' ? 'cur' : ''}">Stream</button><button data-hit="tab-work" class="${tab === 'w' ? 'cur' : ''}">Kursaufgaben</button><button data-hit="tab-people">Personen</button></div>`;
+  if (scr === 'cr-stream') return crHead('s') + `<div class="cr-banner"><b>Klasse 9.1</b>Klassengemeinschaft</div><button class="cr-post" data-hit="post"><span class="cr-ic">▤</span><span>Simon Poremski hat eine neue Aufgabe gepostet: ${TASKTITLE}<br><small style="color:#5f6368">23. Nov., 08:25</small></span></button>`;
+  if (scr === 'cr-work') return crHead('w') + `<div style="padding:.6em .9em .2em;font-size:1.3em">Kein Thema</div><button class="cr-item" data-hit="task"><span class="cr-ic">▤</span><span>${TASKTITLE}</span><span class="meta">Kein Abgabetermin</span></button><button class="cr-item" data-hit="other"><span class="cr-ic v">▮</span><span>Erster Schultag und Klassenratsprotokoll</span><span class="meta">6. Sept.</span></button>`;
+  if (a === 'cr' && (b === 'task' || b === 'add' || b === 'confirm' || b === 'done')){
+    const done = scr === 'cr-done';
+    const atts = (scr === 'cr-task-att' || scr === 'cr-confirm' || done) ? `<div class="att">${ic('docs')}<span>${esc(fname(INHALT.text))}</span></div>` : '';
+    let side = `<div class="cr-side"><div class="hd"><span>Meine Aufgaben</span><span class="${done ? 'st0' : 'st1'}">${done ? 'Abgegeben' : 'Zugewiesen'}</span></div>${atts}`;
+    side += done ? '<button class="btn-o" data-hit="undo">Abgabe rückgängig machen</button>' : `<button class="btn-o" data-hit="add">+ Hinzufügen oder erstellen</button><button class="btn-b" data-hit="turnin">${atts ? 'Abgeben' : 'Als erledigt markieren'}</button>`;
+    side += '</div>';
+    let h = topBar('Klasse 9.1', 'Klassengemeinschaft', 'classroom') + `<div class="cr-task"><div class="txt"><h5>${TASKTITLE}</h5><div class="by">Simon Poremski · 23. Nov., 08:25</div>${POST}</div>${side}</div>`;
+    if (scr === 'cr-add') h += `<div class="menu" style="right:1.2em;top:9.5em"><button data-hit="drive">${ic('drive')} Google Drive</button><button data-hit="link">${ic('link')} Link</button><button data-hit="upfile">${ic('file')} Datei</button><hr><div class="lab">Neu erstellen</div><button data-hit="new-docs">${ic('docs')} Docs</button><button data-hit="new-slides">${ic('slides')} Präsentationen</button><button data-hit="new-sheets">${ic('sheets')} Tabellen</button></div>`;
+    if (scr === 'cr-confirm') h += `<div class="scrim"></div><div class="dlg"><h6>Aufgabe abgeben?</h6>1 Anhang wird für „${TASKTITLE}“ abgegeben.<div class="row"><button data-hit="cancel">Abbrechen</button><button data-hit="confirm">Abgeben</button></div></div>`;
+    return h;
+  }
+  if (a === 'drive'){
+    const files = [['text', 'docs', INHALT.text], ['sheet', 'sheets', INHALT.sheet], ['slide', 'slides', INHALT.slide]];
+    return `<div class="g-top"><div class="ttl"><span style="width:1.7em;display:inline-flex">${ic('drive')}</span>Datei aus Google Drive einfügen</div></div><div class="pick"><div style="color:#5f6368;font-size:.85em;margin:.3em 0">Meine Ablage</div>${files.map(([id, icn, inh]) => `<button data-hit="file-${id}" class="${b === 'picked' && id === 'text' ? 'sel' : ''}">${ic(icn)}${esc(fname(inh))}</button>`).join('')}</div><div style="position:absolute;right:1em;bottom:1em;display:flex;gap:.6em"><button data-hit="cancel" style="padding:.4em .9em">Abbrechen</button><button class="btn-b" data-hit="insert" style="${b === 'picked' ? '' : 'opacity:.45'}">Einfügen</button></div>`;
+  }
+  const K = KIND[a];
+  if (K){
+    if (b === 'home' || b === 'menu'){
+      let h = `<div class="g-top"><div class="ttl"><span style="width:1.7em;display:inline-flex">${ic(K.app)}</span>${K.label}</div><button class="g-dots" data-hit="dots">${DOT9}</button><span class="ava">${esc((G.vn || '?')[0].toUpperCase())}</span></div><div class="empty">Noch keine Dateien. Erstelle deine erste Datei mit dem Plus.</div><button class="fab" data-hit="fab" aria-label="Neu">＋</button>`;
+      if (b === 'menu') h += `<div class="menu" style="right:1.2em;bottom:5.6em"><button data-hit="new-blank">${ic(K.app)} Neu (leer)</button><button data-hit="new-tpl">${ic('file')} Vorlage auswählen</button></div>`;
+      return h;
+    }
+    const named = b === 'done';
+    const title = named ? `<button class="ed-title named" data-hit="title">${esc(fname(K.inh))}</button>` : `<button class="ed-title" data-hit="title">${K.unb}</button>`;
+    let body = a === 'docs' ? '<div class="doc-page">Text eingeben …</div>' : a === 'sheets' ? '<div class="sh-grid">' + ['', 'A', 'B', 'C', 'D', 'E'].map(x => `<div class="h">${x}</div>`).join('') + [1, 2, 3, 4, 5, 6, 7, 8].map(r => `<div class="h">${r}</div>` + '<div></div>'.repeat(5)).join('') + '</div>' : '<div class="sl-wrap"><div class="sl-thumbs"><div></div></div><div class="sl-main">Zum Hinzufügen eines Titels tippen</div></div>';
+    let h = `<div class="ed-bar">${ic(K.app)}${title}<span style="margin-left:auto"></span><span class="ava">${esc((G.vn || '?')[0].toUpperCase())}</span></div><div class="ed-tools"></div>${body}`;
+    if (b === 'rename') h += `<div class="scrim"></div><div class="dlg"><h6>Umbenennen</h6><input type="text" value="${esc(fname(K.inh))}" readonly><div class="row"><button data-hit="cancel">Abbrechen</button><button data-hit="ok">OK</button></div></div>`;
+    return h;
+  }
+  return '<div class="empty">…</div>';
+}
+function simTask(){ return cur === 0 ? GOOGLE[ti] : null; }
+function simReset(again){ const t = simTask(); simStep = !again && t && t.sim && G.sim[key(0, ti)] ? t.sim.length : 0; simWrong = 0; drawSim(); }
+function drawSim(){
+  const t = simTask(); if (!t) return;
+  const msg = $('#simMsg');
+  if (!t.sim){ $('#sim').innerHTML = namesScreen(); msg.className = ''; msg.innerHTML = '<b>Deine Dateinamen für heute.</b> So heißen deine Abgaben im Classroom.'; return; }
+  if (simStep >= t.sim.length){
+    $('#sim').innerHTML = screen(t.end === 'docs-edit' || t.end === 'sheets-edit' || t.end === 'slides-edit' ? t.end.replace('edit', 'done') : t.end);
+    msg.className = 'ok'; msg.innerHTML = '✓ <b>Geschafft!</b> Jetzt mach es genauso auf deinem echten Tablet. <button id="simAgain" style="font-size:.85em;color:var(--ink);background:#fff;border-color:var(--ink)">Nochmal üben</button>';
+    $('#simAgain').onclick = () => simReset(true);
+    return;
+  }
+  const s = t.sim[simStep];
+  $('#sim').innerHTML = screen(s.scr);
+  msg.className = ''; msg.innerHTML = `<b>Schritt ${simStep + 1} von ${t.sim.length}:</b> ${s.h}`;
+  if (simWrong >= 2) markTarget();
+}
+function namesScreen(){
+  return `<div class="g-top"><div class="ttl"><span style="width:1.7em;display:inline-flex">${ic('drive')}</span>Meine Ablage</div></div><div class="pick">` +
+    [['docs', INHALT.text], ['sheets', INHALT.sheet], ['slides', INHALT.slide], ['pdf', INHALT.regeln], ['pdf', INHALT.cert]].map(([i, inh]) => `<button>${ic(i)}${esc(fname(inh))}</button>`).join('') +
+    `</div><div style="padding:.6em 1em;color:#5f6368;font-size:.85em">Regel: <b>Jahr-Monat-Tag-Inhalt-Name</b>. Die Endung (.docx, .pdf) ergänzt die App.</div>`;
+}
+function targets(){ const t = simTask(); if (!t || !t.sim || simStep >= t.sim.length) return []; const x = t.sim[simStep].t; return Array.isArray(x) ? x : [x]; }
+function markTarget(){ const tg = targets(); document.querySelectorAll('#sim [data-hit]').forEach(el => { if (tg.includes(el.dataset.hit)) el.classList.add('pulse'); }); }
+$('#sim').addEventListener('click', e => {
+  const t = simTask(); if (!t || !t.sim || simStep >= t.sim.length) return;
+  initAudio();
+  const el = e.target.closest('[data-hit]');
+  const tg = targets();
+  if (el && tg.includes(el.dataset.hit)){
+    sTap(); simStep++; simWrong = 0;
+    if (simStep >= t.sim.length){ G.sim[key(0, ti)] = true; save(); sRight(); const y = $('#panel').scrollTop; renderPanel(); $('#panel').scrollTop = y; }
+    drawSim(); return;
+  }
+  simWrong++; sWrong();
+  if (el){ el.classList.add('shake'); setTimeout(() => el.classList.remove('shake'), 320); }
+  const msg = $('#simMsg'); msg.className = 'bad';
+  msg.innerHTML = `<b>Nicht ganz.</b> ${t.sim[simStep].h}${simWrong >= 2 ? ' <small>(Rosa hat die richtige Stelle orange markiert.)</small>' : ''}`;
+  if (simWrong >= 2) markTarget();
+});
+
+// ---------- GoodNotes-Leiste mit Mini-Rosa (Tisch 2) ----------
+const gcv = $('#gcv'), gctx = gcv.getContext('2d'), shot = new Image(); shot.src = SHOT;
+function drawGN(time, dt){
+  const g = gnRosa, t = GN[ti];
+  if (g.walking){ const d = g.tx - g.x, sp = 420 * dt; g.face = d < 0 ? -1 : 1; if (Math.abs(d) <= sp){ g.x = g.tx; g.walking = false; } else g.x += Math.sign(d) * sp; }
+  ctxSwap(gctx, () => {
+    ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.clearRect(0, 0, 1400, 874);
+    if (shot.complete && shot.naturalWidth) ctx.drawImage(shot, 0, 0, 1400, 874);
+    ctx.fillStyle = 'rgba(20,14,24,.38)'; ctx.fillRect(0, 124, 1400, 750);
+    // erledigte Werkzeuge mit Haken
+    GN.forEach((x, i) => { if (G.done[key(1, i)] && i !== ti){ circ(x.x + 18, x.y - 16, 11, '#3f7a3a', '#fff', 2); txt('✓', x.x + 18, x.y - 10, 16, '#fff'); } });
+    // Ring um das aktuelle Werkzeug
+    const r = 30 + Math.sin(time * 5) * 3;
+    circ(t.x, t.y, r, null, P.orange, 6); circ(t.x, t.y, r + 7, null, 'rgba(217,112,42,.35)', 5);
+    // Rosa läuft über die Seite und zeigt nach oben auf das Werkzeug
+    const feet = 420;
+    drawRosa({ x:g.x, y:feet, face:g.walking ? g.face : 1, walking:g.walking, talk:false, point:!g.walking }, time * BPM / 60, .78);
+    if (!g.walking){
+      ctx.save(); ctx.setLineDash([10, 9]); line(g.x + 14, feet - 222, t.x, t.y + r + 6, P.orange, 4); ctx.restore();
+      // Sprechblase mit Werkzeugnamen
+      const label = t.n + ' · ' + t.name; ctx.font = 'bold 36px "Baloo 2","Trebuchet MS",sans-serif';
+      const bw = ctx.measureText(label).width + 44, bx = Math.max(10, Math.min(1390 - bw, g.x + 70)), by = 470;
+      poly([bx, by, bx + bw, by - 4, bx + bw + 4, by + 62, bx + 34, by + 66, bx - 4, by + 96, bx + 6, by + 64], P.cloud, P.ink, 4);
+      txt(label, bx + bw / 2, by + 44, 36, P.ink);
+    }
+  });
+}
+
+// ---------- Zertifikat ----------
+function stats(){
+  const keys = Object.keys(G.mc), first = keys.filter(k => G.mc[k].first).length;
+  const nG = GOOGLE.reduce((a, t) => a + t.mc.length, 0), nN = GN.reduce((a, t) => a + t.mc.length, 0);
+  return { first, total:nG + nN, tips:Object.keys(G.tips).length, g:GOOGLE.filter((t, i) => !t.late && G.done[key(0, i)]).length, gn:countDone(1) };
+}
+function wrapLines(c, text, maxW){ const out = []; let l = ''; for (const w of text.split(' ')){ const t = l ? l + ' ' + w : w; if (c.measureText(t).width > maxW && l){ out.push(l); l = w; } else l = t; } if (l) out.push(l); return out; }
+function drawCert(cvs){
+  const c = cvs.getContext('2d'), u = cvs.width / 297, S = stats();
+  const TEAL = '#1f7a72', OR = '#d9702a', INK = '#2b2b2b', TW = '#5d6a6b', LT = '#cfe3e0';
+  const DISP = '"Baloo 2","Trebuchet MS",sans-serif', BODY = '"Trebuchet MS","Gill Sans",sans-serif', MONO = 'Menlo,"Courier New",monospace';
+  c.setTransform(1, 0, 0, 1, 0, 0); c.fillStyle = '#fff'; c.fillRect(0, 0, cvs.width, cvs.height); c.setTransform(u, 0, 0, u, 0, 0);
+  const T = (s, x, y, size, col, font, align, weight) => { c.font = `${weight || ''} ${size}px ${font}`; c.fillStyle = col; c.textAlign = align || 'center'; c.fillText(s, x, y); };
+  const rr = (x, y, w, h, r) => { c.beginPath(); c.roundRect(x, y, w, h, r); };
+  rr(10, 10, 277, 190, 5); c.strokeStyle = TEAL; c.lineWidth = .6; c.stroke();
+  rr(11.8, 11.8, 273.4, 186.4, 3.5); c.strokeStyle = OR; c.lineWidth = .25; c.stroke();
+  // Tablet mit Rose
+  c.save(); c.translate(140, 16); rr(0, 0, 17, 22, 2); c.strokeStyle = TEAL; c.lineWidth = .8; c.stroke(); c.beginPath(); c.moveTo(6.5, 19); c.lineTo(10.5, 19); c.stroke();
+  c.beginPath(); c.arc(16, 3, 3, 0, 7); c.fillStyle = '#c8364f'; c.fill(); c.restore();
+  T('ZERTIFIKAT', 148.5, 47, 3.6, TW, MONO, 'center', 'bold');
+  T('Rosas Tablet · Classroom & GoodNotes', 148.5, 58, 10, TEAL, DISP, 'center', '800');
+  const wer = ((G.vn || '').trim() + ' ' + (G.nn || '').trim()).trim() || '…';
+  let fs = 9; c.font = `800 ${fs}px ${DISP}`; while (c.measureText(wer).width > 230 && fs > 5){ fs -= .25; c.font = `800 ${fs}px ${DISP}`; }
+  T(wer, 148.5, 71, fs, INK, DISP, 'center', '800');
+  T('hat den Tabletworkshop der Klasse 9.1 durchlaufen: Google Classroom, Docs, Sheets, Präsentationen und alle GoodNotes-Werkzeuge 1 bis 24.', 148.5, 79, 3.8, INK, BODY);
+  const rows = [['Tisch 1 · Google & Classroom', `${S.g} von ${GOOGLE.length - 1} Aufträgen`], ['Tisch 2 · GoodNotes-Werkzeuge', `${S.gn} von ${GN.length} Stationen (1 bis 24)`], ['Fragen auf Anhieb richtig', `${S.first} von ${S.total}`], ['Tipps genutzt', String(S.tips)]];
+  rows.forEach(([k, v], i) => { const y = 90 + i * 6.3; T(k, 70, y, 3.8, TW, BODY, 'left'); T(v, 150, y, 3.8, INK, MONO, 'left', 'bold'); c.beginPath(); c.moveTo(68, y + 2.1); c.lineTo(228, y + 2.1); c.strokeStyle = LT; c.lineWidth = .25; c.stroke(); });
+  // Kasten: meine Abgabe
+  rr(22, 119, 253, 52, 3); c.setLineDash([1.4, 1]); c.strokeStyle = OR; c.lineWidth = .3; c.stroke(); c.setLineDash([]);
+  T('Meine Abgabe im Classroom (Aufgabe „Tabletworkshop“)', 27, 126.5, 4.4, OR, DISP, 'left', '800');
+  const files = [['Textdokument (Docs)', INHALT.text], ['Tabellenkalkulation (Sheets)', INHALT.sheet], ['Präsentation (Präsentationen)', INHALT.slide], ['Klassenregeln, in GoodNotes unterschrieben (PDF)', INHALT.regeln], ['dieses Zertifikat (PDF)', INHALT.cert]];
+  files.forEach(([lab, inh], i) => { const y = 134 + i * 7; T('☐', 27, y, 4, INK, BODY, 'left'); T(fname(inh), 34, y, 3.6, INK, MONO, 'left', 'bold'); T(lab, 150, y, 3.4, TW, BODY, 'left'); });
+  T('Regel: Jahr-Monat-Tag-Inhalt-Name · erst nach dem Anhängen auf „Abgeben“ tippen', 27, 168, 3.1, TW, BODY, 'left');
+  const datum = new Date().toLocaleDateString('de-DE', { day:'numeric', month:'long', year:'numeric' });
+  T('Berlin, ' + datum, 22, 187, 3.6, TW, BODY, 'left'); T(REGELN.schule + ' · Klasse ' + REGELN.klasse + ' · Workshop Tabletklasse', 22, 192.5, 3.6, TW, BODY, 'left');
+  T('Rosa', 245, 186, 11, '#2b3a6b', '"Snell Roundhand","Segoe Script","Brush Script MT","Apple Chancery",cursive', 'center', 'bold');
+  c.beginPath(); c.moveTo(212, 188.5); c.lineTo(278, 188.5); c.strokeStyle = TW; c.lineWidth = .2; c.stroke();
+  T('Rosa, Tablet-Coach der 9.1', 245, 193.5, 3.6, TW, BODY, 'center');
+  c.textAlign = 'left';
+}
+function pdfFromJpeg(jpg, w, h, title){
+  const enc = new TextEncoder(), parts = [], offs = []; let len = 0;
+  const add = x => { const b = typeof x === 'string' ? enc.encode(x) : x; parts.push(b); len += b.length; };
+  const obj = (n, body) => { offs[n] = len; add(`${n} 0 obj\n${body}\nendobj\n`); };
+  const PW = 841.89, PH = 595.28, content = `q ${PW} 0 0 ${PH} 0 0 cm /Im0 Do Q`;
+  add('%PDF-1.4\n'); add(new Uint8Array([37, 199, 236, 143, 162, 10]));
+  obj(1, '<< /Type /Catalog /Pages 2 0 R >>');
+  obj(2, '<< /Type /Pages /Kids [3 0 R] /Count 1 >>');
+  obj(3, `<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${PW} ${PH}] /Resources << /XObject << /Im0 4 0 R >> >> /Contents 5 0 R >>`);
+  offs[4] = len; add(`4 0 obj\n<< /Type /XObject /Subtype /Image /Width ${w} /Height ${h} /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ${jpg.length} >>\nstream\n`); add(jpg); add('\nendstream\nendobj\n');
+  obj(5, `<< /Length ${content.length} >>\nstream\n${content}\nendstream`);
+  obj(6, `<< /Title (${title.replace(/[^\x20-\x7e]/g, '_').replace(/[()\\]/g, '')}) /Creator (Rosas Tablet) >>`);
+  const xref = len;
+  add(`xref\n0 7\n0000000000 65535 f \n` + [1, 2, 3, 4, 5, 6].map(n => String(offs[n]).padStart(10, '0') + ' 00000 n \n').join(''));
+  add(`trailer\n<< /Size 7 /Root 1 0 R /Info 6 0 R >>\nstartxref\n${xref}\n%%EOF\n`);
+  return new Blob(parts, { type:'application/pdf' });
+}
+const certFile = () => fname(INHALT.cert) + '.pdf';
+async function fontsReady(){ try { await Promise.all([document.fonts.load('800 40px "Baloo 2"'), document.fonts.load('700 40px "Baloo 2"')]); } catch (e) {} }
+async function renderCert(){ await fontsReady(); drawCert($('#certCv')); }
+function openCert(){ $('#certName').textContent = certFile(); $('#certMsg').textContent = ''; $('#cert').hidden = false; renderCert(); $('#certPdf').focus(); }
+$('#certClose').onclick = async () => {
+  $('#cert').hidden = true;
+  if (G.cert && !G.done['g-abgabe'] && started) run(async () => { await say('Super! Jetzt zurück zu Tisch 1: Wir üben das Abgeben im Classroom.'); });
+};
+$('#certPdf').onclick = async () => {
+  await renderCert();
+  const c = $('#certCv'), bin = atob(c.toDataURL('image/jpeg', .9).split(',')[1]), jpg = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) jpg[i] = bin.charCodeAt(i);
+  const name = certFile(), blob = pdfFromJpeg(jpg, c.width, c.height, name), url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href = url; a.download = name; document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 60000);
+  G.cert = true; save(); updateGoal();
+  $('#certMsg').textContent = `Gespeichert als „${name}“ (iPad: App Dateien → Downloads).`; sRight();
+};
+async function pultClick(){
+  if (G.cert) { await say('Hier ist dein Zertifikat. Du kannst es jederzeit nochmal speichern.', 2200); openCert(); return; }
+  if (!allDone()){
+    const miss = [!gMainDone() && 'Tisch 1', !gnDone() && 'Tisch 2'].filter(Boolean).join(' und ');
+    return say(`Das Zertifikat bekommst du, wenn ${miss} geschafft ${miss.includes('und') ? 'sind' : 'ist'}.`);
+  }
+  await say('Herzlichen Glückwunsch! Speichere dein Zertifikat als PDF. Der Dateiname stimmt schon.');
+  openCert();
+}
+
+// ---------- Eingabe im Klassenzimmer ----------
+let hover = null, focusIdx = -1;
+function toCanvas(e){ const r = cv.getBoundingClientRect(); return [(e.clientX - r.left) / r.width * W, (e.clientY - r.top) / r.height * H]; }
+const HS = [
+  ...DESKS.filter(d => d.label).map(d => ({ kind:'desk', d, box:() => [d.x - d.w / 2 - 10, d.top - 110 * d.sc, d.w + 20, d.base - d.top + 110 * d.sc] })),
+  { kind:'poster', box:() => [POSTER.x, POSTER.y, POSTER.w, POSTER.h] },
+  { kind:'rosa', box:() => { const s = depth(rosa.y); return [rosa.x - 60 * s, rosa.y - 330 * s, 120 * s, 330 * s]; } }];
+function hit(x, y){ for (const h of [...HS].reverse()){ const [bx, by, bw, bh] = h.box(); if (x >= bx && x <= bx + bw && y >= by && y <= by + bh) return h; } return null; }
+function labelFor(h){
+  if (!h) return '';
+  if (h.kind === 'rosa') return 'Rosa <small>· Tippen: um Rat fragen</small>';
+  if (h.kind === 'poster') return 'Unser Regelplakat <small>· Tippen: Rosa erklärt zwei neue Regeln</small>';
+  return esc(h.d.label) + ' <small>· Tippen: hingehen</small>';
+}
+function setLabel(t){ $('#label').innerHTML = t; }
+function activate(h){
+  if (h.kind === 'rosa') return run(rosaTip);
+  if (h.kind === 'poster') return run(posterTalk);
+  run(() => visit(h.d));
+}
+async function posterTalk(){
+  const k = REGELN.klassenregeln, r1 = k.find(x => x.icon === 'backpack'), r2 = k.find(x => x.icon === 'tabletflat');
+  await walkTo(POSTER.x + POSTER.w + 90, 790); rosa.face = -1;
+  await say('Unser Regelplakat! Zwei Regeln sind neu dazugekommen.', 2200);
+  if (r1) await say(r1.titel + ': ' + r1.text);
+  if (r2) await say(r2.titel + ': ' + r2.text);
+  await say('So sieht die Lehrkraft, woran ihr arbeitet, und niemand wird abgelenkt.', 2600);
+}
+async function rosaTip(){
+  if (!gMainDone()) return say('Fang an Tisch 1 an: Google und Classroom. Tippe auf den Tisch vorne links.');
+  if (!gnDone()) return say(`Weiter an Tisch 2: GoodNotes. Geschafft hast du schon ${countDone(1)} von ${GN.length} Werkzeug-Stationen.`);
+  if (!G.cert) return say('Ab zum Lehrerpult, dort wartet dein Zertifikat!');
+  if (!G.done['g-abgabe']) return say('Jetzt noch das Abgeben üben: zurück zu Tisch 1.');
+  return say('Alles geschafft! Gib jetzt deine fünf Dateien echt im Classroom ab und tippe auf „Abgeben“.');
+}
+cv.addEventListener('contextmenu', e => e.preventDefault());
+cv.addEventListener('pointerup', e => {
+  if (!started) return;
+  initAudio();
+  if (speech && busy){ speech.t = speech.dur; return; }
+  if (busy) return;
+  const [x, y] = toCanvas(e), h = hit(x, y);
+  if (h) return activate(h);
+  run(async () => { await walkTo(x, y); });
+});
+cv.addEventListener('pointermove', e => {
+  const [x, y] = toCanvas(e); hover = hit(x, y); focusIdx = -1;
+  cv.style.cursor = hover ? 'pointer' : 'default'; if (!busy) setLabel(labelFor(hover));
+});
+document.addEventListener('keydown', e => {
+  if (!started) return;
+  if (!$('#cert').hidden){ if (e.key === 'Escape') $('#certClose').click(); return; }
+  if (cur >= 0){ if (e.key === 'Escape') closeStation(); return; }
+  if (speech && (e.key === ' ' || e.key === 'Enter' || e.key === 'Escape')){ speech.t = speech.dur; e.preventDefault(); return; }
+  if (e.target.tagName === 'BUTTON' && (e.key === 'Enter' || e.key === ' ')) return;
+  if (e.key === 'Tab'){ e.preventDefault(); focusIdx = (focusIdx + (e.shiftKey ? HS.length - 1 : 1) + HS.length) % HS.length; hover = HS[focusIdx]; setLabel(labelFor(hover)); }
+  else if ((e.key === 'Enter' || e.key === ' ') && hover){ e.preventDefault(); initAudio(); activate(hover); }
+});
+
+// ---------- Knöpfe ----------
+function updateGoal(){
+  let t;
+  if (!gMainDone()) t = `Tisch 1 · Google & Classroom (${countDone(0)} von ${GOOGLE.length - 1} Aufträgen)`;
+  else if (!gnDone()) t = `Tisch 2 · GoodNotes-Werkzeuge (${countDone(1)} von ${GN.length})`;
+  else if (!G.cert) t = 'Zum Lehrerpult: Zertifikat als PDF speichern';
+  else if (!G.done['g-abgabe']) t = 'Tisch 1: Abgeben im Classroom üben';
+  else t = 'Alles geschafft! Jetzt echt im Classroom abgeben.';
+  $('#goaltext').textContent = t;
+}
+function setPressed(b, v){ b.setAttribute('aria-pressed', v ? 'true' : 'false'); }
+$('#bSfx').onclick = () => { initAudio(); prefs.sfx = !prefs.sfx; setPressed($('#bSfx'), prefs.sfx); if (bus) bus.gain.value = prefs.sfx ? 1 : 0; savePrefs(); };
+$('#bText').onclick = () => { prefs.ts = prefs.ts === 1 ? 1.2 : prefs.ts === 1.2 ? 1.4 : 1; applyTs(); savePrefs(); };
+function applyTs(){ document.documentElement.style.setProperty('--ts', prefs.ts); $('#bText').textContent = 'Text ' + (prefs.ts === 1 ? 'A' : prefs.ts === 1.2 ? 'A+' : 'A++'); }
+let resetArmed = null;
+$('#bReset').onclick = () => {
+  if (!resetArmed){ $('#bReset').textContent = 'Wirklich? Nochmal tippen'; resetArmed = setTimeout(() => { resetArmed = null; $('#bReset').textContent = 'Neu starten'; }, 3500); return; }
+  clearTimeout(resetArmed); resetArmed = null; $('#bReset').textContent = 'Neu starten';
+  G = fresh(); for (const k in wrongTries) delete wrongTries[k]; for (const k in orders) delete orders[k]; save(); updateGoal();
+  Object.assign(rosa, { x:150, y:860, face:1 }); started = false; $('#vn').value = ''; $('#nn').value = ''; startState(); $('#start').hidden = false; $('#vn').focus();
+};
+function startState(){ $('#bStart').disabled = !(clean($('#vn').value) && clean($('#nn').value)); $('#fnPrev').textContent = isoToday() + '-Textdokument-' + (clean($('#nn').value) || 'Muster'); $('#bStart').textContent = G.intro && (countDone(0) || countDone(1)) ? 'Weiter im Klassenzimmer' : 'Klassenzimmer betreten'; }
+['vn', 'nn'].forEach(id => { $('#' + id).addEventListener('input', startState); $('#' + id).addEventListener('keydown', e => { if (e.key === 'Enter' && !$('#bStart').disabled) $('#bStart').click(); }); });
+$('#bStart').onclick = () => {
+  if ($('#bStart').disabled) return;
+  G.vn = $('#vn').value.trim(); G.nn = $('#nn').value.trim(); save(); initAudio(); $('#start').hidden = true; started = true; updateGoal();
+  if (!G.intro) run(intro); else run(() => say('Schön, dass du wieder da bist! Weiter geht’s.'));
+};
+$('#endBack').onclick = () => { $('#end').hidden = true; };
+$('#endCert').onclick = () => { $('#end').hidden = true; openCert(); };
+$('#stClose').onclick = () => closeStation();
+async function intro(){
+  await walkTo(560, 800);
+  await say(`Hallo ${G.vn}! Ich bin Rosa. Willkommen im Klassenzimmer der Tabletklasse 9.1.`);
+  await say('Siehst du? Zu Beginn der Stunde sind alle Tablets sicher im Rucksack verstaut.');
+  await say('Wir arbeiten heute an zwei Tischen. Dort liegen die Tablets flach auf dem Tisch, mit dem Display gut sichtbar.');
+  await say('Zuerst Tisch 1: Google Classroom, Docs, Sheets und Präsentationen. Komm mit!', 2600);
+  G.intro = true; save();
+  await visit(DESKS.find(d => d.id === 't1'));
+}
+
+// ---------- Hauptschleife ----------
+let beat = 0, lastT = performance.now();
+function drawSpeech(){
+  if (!speech) return;
+  const fs = Math.round(38 * prefs.ts), lh = fs * 1.22, maxW = 860;
+  ctx.font = `bold ${fs}px "Baloo 2","Trebuchet MS",sans-serif`;
+  const words = speech.text.split(' '), lines = []; let c = '';
+  for (const w of words){ const t = c ? c + ' ' + w : w; if (ctx.measureText(t).width > maxW && c){ lines.push(c); c = w; } else c = t; }
+  if (c) lines.push(c);
+  const wMax = Math.max(...lines.map(l => ctx.measureText(l).width)), s = depth(rosa.y);
+  const bw = wMax + 56, bh = lines.length * lh + 34;
+  const x = Math.max(24 + bw / 2, Math.min(W - 24 - bw / 2, rosa.x)), y = Math.max(110, rosa.y - 360 * s - bh), l = x - bw / 2;
+  poly([l, y + 6, l + bw - 4, y, l + bw, y + bh - 4, rosa.x + 30, y + bh, rosa.x + 6, y + bh + 40, rosa.x - 6, y + bh + 2, l + 6, y + bh + 4], P.cloud, P.ink, 5);
+  ctx.textAlign = 'center'; lines.forEach((ln, i) => { ctx.fillStyle = P.ink; ctx.fillText(ln, x, y + 20 + fs * .9 + i * lh); }); ctx.textAlign = 'left';
+}
+function update(dt){
+  beat += dt * BPM / 60;
+  if (rosa.walking && rosa.tx != null){
+    const dx = rosa.tx - rosa.x, dy = rosa.ty - rosa.y, d = Math.hypot(dx, dy), sp = 360 * depth(rosa.y) * dt;
+    if (Math.abs(dx) > 2) rosa.face = dx < 0 ? -1 : 1;
+    if (d <= sp){ rosa.x = rosa.tx; rosa.y = rosa.ty; rosa.walking = false; rosa.tx = null; const f = rosa.onArrive; rosa.onArrive = null; if (f) f(); }
+    else { rosa.x += dx / d * sp; rosa.y += dy / d * sp; }
+  }
+  for (let i = tweens.length - 1; i >= 0; i--){
+    const t = tweens[i]; t.t += dt; const k = Math.min(1, t.t / t.dur), e = k < .5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2;
+    t.o[t.k] = t.from + (t.to - t.from) * e;
+    if (k >= 1){ tweens.splice(i, 1); t.res(); }
+  }
+  if (speech){ speech.t += dt; if (speech.t >= speech.dur) speech.res(); }
+}
+function draw(time){
+  ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.clearRect(0, 0, W, H);
+  ctx.setTransform(cam.k, 0, 0, cam.k, W / 2 - cam.x * cam.k, H / 2 - cam.y * cam.k);
+  ctx.drawImage(bg, 0, 0);
+  const items = DESKS.map(d => ({ y:d.base, f:() => drawDesk(d, time) }));
+  items.push({ y:rosa.y, f:() => drawRosa(rosa, beat) });
+  items.sort((a, b) => a.y - b.y).forEach(it => it.f());
+  ctx.globalAlpha = .45; ctx.drawImage(tex, 0, 0); ctx.globalAlpha = 1;
+  if (focusIdx >= 0 && hover){ const [x, y, w, h] = hover.box(); ctx.save(); ctx.setLineDash([14, 10]); ctx.strokeStyle = P.brassL; ctx.lineWidth = 5; ctx.strokeRect(x, y, w, h); ctx.restore(); }
+  drawSpeech();
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  if (cam.fade > 0){ ctx.fillStyle = `rgba(26,18,32,${cam.fade})`; ctx.fillRect(0, 0, W, H); }
+}
+function frame(now){
+  const dt = Math.min(.05, (now - lastT) / 1000); lastT = now;
+  update(dt); const t = now / 1000;
+  if (cur === 1) drawGN(t, dt); else if (cur < 0) draw(t);
+  requestAnimationFrame(frame);
+}
+function renderTexture(){
+  const t = tex.getContext('2d'), r = rnd(7);
+  for (let i = 0; i < 9000; i++){ t.fillStyle = r() < .5 ? 'rgba(255,240,210,.09)' : 'rgba(40,20,50,.09)'; const x = r() * W, y = r() * H, w = 1 + r() * 4; t.fillRect(x, y, w, w * (.4 + r())); }
+}
+drawRoom(bg.getContext('2d')); renderTexture();
+if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => drawRoom(bg.getContext('2d')));
+applyTs(); setPressed($('#bSfx'), prefs.sfx);
+$('#vn').value = G.vn || ''; $('#nn').value = G.nn || ''; startState(); updateGoal();
+requestAnimationFrame(frame);
+</script>
+</body>
+</html>

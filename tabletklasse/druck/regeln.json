@@ -40,6 +40,18 @@
       "bezug": "3"
     },
     {
+      "icon": "backpack",
+      "titel": "Zu Beginn im Rucksack",
+      "text": "Zu Beginn des Unterrichts ist mein Tablet sicher im Rucksack verstaut. Ich hole es erst heraus, wenn die Lehrkraft es erlaubt.",
+      "bezug": "1, 4"
+    },
+    {
+      "icon": "tabletflat",
+      "titel": "Flach auf dem Tisch",
+      "text": "Wenn ich mit dem Tablet arbeite, liegt es vollständig flach auf dem Tisch und das Display ist gut sichtbar.",
+      "bezug": "1"
+    },
+    {
       "icon": "belloff",
       "titel": "Stumm und „Nicht stören“",
       "text": "In der Schule sind meine mobilen Geräte stumm geschaltet, „Nicht stören“ ist aktiv und Benachrichtigungen sind aus.",
@@ -70,7 +82,11 @@
       "bezug": "1–4"
     }
   ],
-  "ziel": ["Spaß", "Lernen", "Zusammenhalt"],
+  "ziel": [
+    "Spaß",
+    "Lernen",
+    "Zusammenhalt"
+  ],
   "nicht_uebernommen": [
     {
       "vorschlag": "„Keine Kontrolle von außen bzw. durch andere Personen (z. B. Lehrkräfte)“",

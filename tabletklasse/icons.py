@@ -25,6 +25,8 @@ PATHS = {
     "check": '<rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 12l3 3 5-6"/>',
     "wave": '<path d="M7 11V6.5a1.5 1.5 0 0 1 3 0V11"/><path d="M10 10V4.5a1.5 1.5 0 0 1 3 0V10"/><path d="M13 10V5.5a1.5 1.5 0 0 1 3 0V12"/><path d="M16 9.5a1.5 1.5 0 0 1 3 0V14a7 7 0 0 1-7 7h-1a6 6 0 0 1-5-2.7L3.3 14a1.5 1.5 0 0 1 2.4-1.8L7 14"/>',
     "list": '<path d="M9 6h11M9 12h11M9 18h11"/><path d="M4 6h.01M4 12h.01M4 18h.01"/>',
+    "backpack": '<path d="M8 6.5V5a4 4 0 0 1 8 0v1.5"/><path d="M5 10.5a4 4 0 0 1 4-4h6a4 4 0 0 1 4 4V20a1.5 1.5 0 0 1-1.5 1.5h-11A1.5 1.5 0 0 1 5 20z"/><path d="M8.5 14h7v4.5h-7z"/><path d="M12 14v1.5"/>',
+    "tabletflat": '<path d="M2.5 17.5L7 9h14.5L17 17.5z"/><path d="M8.5 15h6"/><path d="M1.5 20.5h21"/>',
     "poster": '<rect x="4" y="3" width="16" height="18" rx="1.5"/><path d="M8 8h8M8 12h8M8 16h5"/>',
 }
 

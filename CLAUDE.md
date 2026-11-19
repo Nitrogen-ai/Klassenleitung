@@ -17,7 +17,13 @@
 - `workshop.src.html` ist die Vorlage; `workshop.html` wird von `build.py`
   erzeugt (Bilder aus `assets/` und Icons eingebettet, offline lauffähig).
   Nie `workshop.html` von Hand bearbeiten.
+- `rosas-tablet.src.html` -> `rosas-tablet.html` (build.py): Übungsspiel im Stil von
+  Rosas Säurelabor. Tisch 1 Classroom/Docs/Sheets/Präsentationen als Klick-Simulation,
+  Tisch 2 GoodNotes-Werkzeugleiste 1–24 (Positionen auf `assets/werkzeuge.jpg`),
+  Zertifikat-PDF heißt `JJJJ-MM-TT-Zertifikat-Nachname.pdf`. Verlinkt auf Folie 8.
+- `druck/plakat.typ` ist der Plakatinhalt; `poster-a3.typ` (A3) und
+  `poster-a1-kacheln.typ` (A1 aus 4 × A3 mit Schnittlinien) nutzen ihn beide.
 - `icons.py`: Linien-Icons für HTML und Typst (`druck/icons.typ` wird erzeugt).
-- `python3 build.py` baut alles und legt PDFs (Vertrag A4, Plakat A3,
-  Übersichtsblatt mit QR) + HTML + Typst-Kopien nach
+- `python3 build.py` baut alles und legt PDFs (Vertrag A4, Plakat A3, Plakat A1 aus 4 × A3,
+  Übersichtsblatt mit klickbaren QR-Codes) + HTML + Typst-Kopien nach
   iCloud `Unterricht/Klassenleitung/Tabletklasse`. PDFs gehören nicht ins Repo.

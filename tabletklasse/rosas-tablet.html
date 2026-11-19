@@ -1048,60 +1048,113 @@ function stats(){
   const nG = GOOGLE.reduce((a, t) => a + t.mc.length, 0), nN = GN.reduce((a, t) => a + t.mc.length, 0);
   return { first, total:nG + nN, tips:Object.keys(G.tips).length, g:GOOGLE.filter((t, i) => !t.late && G.done[key(0, i)]).length, gn:countDone(1) };
 }
-function wrapLines(c, text, maxW){ const out = []; let l = ''; for (const w of text.split(' ')){ const t = l ? l + ' ' + w : w; if (c.measureText(t).width > maxW && l){ out.push(l); l = w; } else l = t; } if (l) out.push(l); return out; }
-function drawCert(cvs){
-  const c = cvs.getContext('2d'), u = cvs.width / 297, S = stats();
+// Zertifikat: eine Layoutbeschreibung (Millimeter, A4 quer 297 × 210), daraus Canvas-Vorschau UND Vektor-PDF.
+// PDF nutzt die eingebauten Standardschriften (Helvetica, Courier, Times), nichts wird eingebettet.
+// Zeichen außerhalb von WinAnsi (z. B. ı, ł, ş in Namen) werden nur für diese eine Zeile hochaufgelöst als Bild eingesetzt.
+const CF = {
+  H:  { css:'Helvetica, Arial, sans-serif', w:'', pdf:'Helvetica' },
+  HB: { css:'Helvetica, Arial, sans-serif', w:'bold', pdf:'Helvetica-Bold' },
+  CB: { css:'Courier, "Courier New", monospace', w:'bold', pdf:'Courier-Bold' },
+  TBI:{ css:'Times, "Times New Roman", serif', w:'italic bold', pdf:'Times-BoldItalic' } };
+const mctx = document.createElement('canvas').getContext('2d');
+const cssFont = (f, px) => `${CF[f].w} ${px}px ${CF[f].css}`;
+function measure(s, f, size){ mctx.font = cssFont(f, 100); return mctx.measureText(s).width / 100 * size; }
+function certOps(){
+  const S = stats(), O = [];
   const TEAL = '#1f7a72', OR = '#d9702a', INK = '#2b2b2b', TW = '#5d6a6b', LT = '#cfe3e0';
-  const DISP = '"Baloo 2","Trebuchet MS",sans-serif', BODY = '"Trebuchet MS","Gill Sans",sans-serif', MONO = 'Menlo,"Courier New",monospace';
-  c.setTransform(1, 0, 0, 1, 0, 0); c.fillStyle = '#fff'; c.fillRect(0, 0, cvs.width, cvs.height); c.setTransform(u, 0, 0, u, 0, 0);
-  const T = (s, x, y, size, col, font, align, weight) => { c.font = `${weight || ''} ${size}px ${font}`; c.fillStyle = col; c.textAlign = align || 'center'; c.fillText(s, x, y); };
-  const rr = (x, y, w, h, r) => { c.beginPath(); c.roundRect(x, y, w, h, r); };
-  rr(10, 10, 277, 190, 5); c.strokeStyle = TEAL; c.lineWidth = .6; c.stroke();
-  rr(11.8, 11.8, 273.4, 186.4, 3.5); c.strokeStyle = OR; c.lineWidth = .25; c.stroke();
-  // Tablet mit Rose
-  c.save(); c.translate(140, 16); rr(0, 0, 17, 22, 2); c.strokeStyle = TEAL; c.lineWidth = .8; c.stroke(); c.beginPath(); c.moveTo(6.5, 19); c.lineTo(10.5, 19); c.stroke();
-  c.beginPath(); c.arc(16, 3, 3, 0, 7); c.fillStyle = '#c8364f'; c.fill(); c.restore();
-  T('ZERTIFIKAT', 148.5, 47, 3.6, TW, MONO, 'center', 'bold');
-  T('Rosas Tablet · Classroom & GoodNotes', 148.5, 58, 10, TEAL, DISP, 'center', '800');
+  const T = (s, x, y, size, col, f, align, maxW) => { if (maxW) while (measure(s, f, size) > maxW && size > 2) size -= .1; O.push({ t:'text', s, x, y, size, col, f, align:align || 'left' }); };
+  const R = (x, y, w, h, r, col, lw, dash) => O.push({ t:'rrect', x, y, w, h, r, col, lw, dash });
+  const L = (x1, y1, x2, y2, col, lw) => O.push({ t:'line', x1, y1, x2, y2, col, lw });
+  R(10, 10, 277, 190, 5, TEAL, .6); R(11.8, 11.8, 273.4, 186.4, 3.5, OR, .25);
+  R(140, 16, 17, 22, 2, TEAL, .8); L(146.5, 35, 150.5, 35, TEAL, .8); O.push({ t:'circle', x:156, y:19, r:3, col:'#c8364f' });
+  T('ZERTIFIKAT', 148.5, 47, 3.6, TW, 'CB', 'center');
+  T('Rosas Tablet · Classroom & GoodNotes', 148.5, 58, 9.5, TEAL, 'HB', 'center', 250);
   const wer = ((G.vn || '').trim() + ' ' + (G.nn || '').trim()).trim() || '…';
-  let fs = 9; c.font = `800 ${fs}px ${DISP}`; while (c.measureText(wer).width > 230 && fs > 5){ fs -= .25; c.font = `800 ${fs}px ${DISP}`; }
-  T(wer, 148.5, 71, fs, INK, DISP, 'center', '800');
-  T('hat den Tabletworkshop der Klasse 9.1 durchlaufen: Google Classroom, Docs, Sheets, Präsentationen und alle GoodNotes-Werkzeuge 1 bis 24.', 148.5, 79, 3.8, INK, BODY);
+  T(wer, 148.5, 71, 8.5, INK, 'HB', 'center', 230);
+  T('hat den Tabletworkshop der Klasse 9.1 durchlaufen: Google Classroom, Docs, Sheets, Präsentationen und alle GoodNotes-Werkzeuge 1 bis 24.', 148.5, 79, 3.5, INK, 'H', 'center', 255);
   const rows = [['Tisch 1 · Google & Classroom', `${S.g} von ${GOOGLE.length - 1} Aufträgen`], ['Tisch 2 · GoodNotes-Werkzeuge', `${S.gn} von ${GN.length} Stationen (1 bis 24)`], ['Fragen auf Anhieb richtig', `${S.first} von ${S.total}`], ['Tipps genutzt', String(S.tips)]];
-  rows.forEach(([k, v], i) => { const y = 90 + i * 6.3; T(k, 70, y, 3.8, TW, BODY, 'left'); T(v, 150, y, 3.8, INK, MONO, 'left', 'bold'); c.beginPath(); c.moveTo(68, y + 2.1); c.lineTo(228, y + 2.1); c.strokeStyle = LT; c.lineWidth = .25; c.stroke(); });
-  // Kasten: meine Abgabe
-  rr(22, 119, 253, 52, 3); c.setLineDash([1.4, 1]); c.strokeStyle = OR; c.lineWidth = .3; c.stroke(); c.setLineDash([]);
-  T('Meine Abgabe im Classroom (Aufgabe „Tabletworkshop“)', 27, 126.5, 4.4, OR, DISP, 'left', '800');
+  rows.forEach(([k, v], i) => { const y = 90 + i * 6.3; T(k, 70, y, 3.6, TW, 'H'); T(v, 150, y, 3.6, INK, 'CB'); L(68, y + 2.1, 228, y + 2.1, LT, .25); });
+  R(22, 119, 253, 52, 3, OR, .3, [1.4, 1]);
+  T('Meine Abgabe im Classroom (Aufgabe „Tabletworkshop“)', 27, 126.5, 4.2, OR, 'HB');
   const files = [['Textdokument (Docs)', INHALT.text], ['Tabellenkalkulation (Sheets)', INHALT.sheet], ['Präsentation (Präsentationen)', INHALT.slide], ['Klassenregeln, in GoodNotes unterschrieben (PDF)', INHALT.regeln], ['dieses Zertifikat (PDF)', INHALT.cert]];
-  files.forEach(([lab, inh], i) => { const y = 134 + i * 7; T('☐', 27, y, 4, INK, BODY, 'left'); T(fname(inh), 34, y, 3.6, INK, MONO, 'left', 'bold'); T(lab, 150, y, 3.4, TW, BODY, 'left'); });
-  T('Regel: Jahr-Monat-Tag-Inhalt-Name · erst nach dem Anhängen auf „Abgeben“ tippen', 27, 168, 3.1, TW, BODY, 'left');
+  files.forEach(([lab, inh], i) => { const y = 134 + i * 7; R(27, y - 2.9, 3, 3, .4, INK, .3); T(fname(inh), 34, y, 3.4, INK, 'CB', 'left', 112); T(lab, 150, y, 3.3, TW, 'H', 'left', 120); });
+  T('Regel: Jahr-Monat-Tag-Inhalt-Name · erst nach dem Anhängen auf „Abgeben“ tippen', 27, 168, 3, TW, 'H');
   const datum = new Date().toLocaleDateString('de-DE', { day:'numeric', month:'long', year:'numeric' });
-  T('Berlin, ' + datum, 22, 187, 3.6, TW, BODY, 'left'); T(REGELN.schule + ' · Klasse ' + REGELN.klasse + ' · Workshop Tabletklasse', 22, 192.5, 3.6, TW, BODY, 'left');
-  T('Rosa', 245, 186, 11, '#2b3a6b', '"Snell Roundhand","Segoe Script","Brush Script MT","Apple Chancery",cursive', 'center', 'bold');
-  c.beginPath(); c.moveTo(212, 188.5); c.lineTo(278, 188.5); c.strokeStyle = TW; c.lineWidth = .2; c.stroke();
-  T('Rosa, Tablet-Coach der 9.1', 245, 193.5, 3.6, TW, BODY, 'center');
-  c.textAlign = 'left';
+  T('Berlin, ' + datum, 22, 187, 3.5, TW, 'H'); T(REGELN.schule + ' · Klasse ' + REGELN.klasse + ' · Workshop Tabletklasse', 22, 192.5, 3.5, TW, 'H');
+  T('Rosa', 245, 186, 10, '#2b3a6b', 'TBI', 'center');
+  L(212, 188.5, 278, 188.5, TW, .2);
+  T('Rosa, Tablet-Coach der 9.1', 245, 193.5, 3.5, TW, 'H', 'center');
+  return O;
 }
-function pdfFromJpeg(jpg, w, h, title){
+const textX = o => o.align === 'center' ? o.x - measure(o.s, o.f, o.size) / 2 : o.align === 'right' ? o.x - measure(o.s, o.f, o.size) : o.x;
+function drawCert(cvs){
+  const c = cvs.getContext('2d'), u = cvs.width / 297;
+  c.setTransform(1, 0, 0, 1, 0, 0); c.fillStyle = '#fff'; c.fillRect(0, 0, cvs.width, cvs.height); c.setTransform(u, 0, 0, u, 0, 0);
+  c.lineJoin = 'round'; c.lineCap = 'round'; c.textAlign = 'left';
+  for (const o of certOps()){
+    if (o.t === 'text'){ c.font = cssFont(o.f, o.size); c.fillStyle = o.col; c.fillText(o.s, textX(o), o.y); }
+    else if (o.t === 'rrect'){ c.beginPath(); c.roundRect(o.x, o.y, o.w, o.h, o.r); c.setLineDash(o.dash || []); c.strokeStyle = o.col; c.lineWidth = o.lw; c.stroke(); c.setLineDash([]); }
+    else if (o.t === 'line'){ c.beginPath(); c.moveTo(o.x1, o.y1); c.lineTo(o.x2, o.y2); c.strokeStyle = o.col; c.lineWidth = o.lw; c.stroke(); }
+    else if (o.t === 'circle'){ c.beginPath(); c.arc(o.x, o.y, o.r, 0, Math.PI * 2); c.fillStyle = o.col; c.fill(); }
+  }
+}
+// WinAnsi-Kodierung der PDF-Standardschriften; null, wenn ein Zeichen fehlt
+const WA = { '€':0x80, '‚':0x82, '„':0x84, '…':0x85, '‘':0x91, '’':0x92, '“':0x93, '”':0x94, '•':0x95, '–':0x96, '—':0x97 };
+function winAnsi(s){ const out = []; for (const ch of s){ const c = ch.codePointAt(0); if (c < 0x80 || (c >= 0xA0 && c <= 0xFF)) out.push(c); else if (WA[ch]) out.push(WA[ch]); else return null; } return out; }
+function certPdf(title){
+  const K = 72 / 25.4, PH = 210, n = v => (Math.round(v * 1000) / 1000).toString();
+  const X = x => n(x * K), Y = y => n((PH - y) * K);
+  const rgb = h => [1, 3, 5].map(i => n(parseInt(h.slice(i, i + 2), 16) / 255)).join(' ');
+  const FONTS = Object.keys(CF), images = [], cs = [];
+  const bez = .5523;
+  for (const o of certOps()){
+    if (o.t === 'text'){
+      const codes = winAnsi(o.s), x0 = textX(o);
+      if (codes){ cs.push(`BT /F${FONTS.indexOf(o.f) + 1} ${n(o.size * K)} Tf ${rgb(o.col)} rg ${X(x0)} ${Y(o.y)} Td <${codes.map(c => c.toString(16).padStart(2, '0')).join('')}> Tj ET`); continue; }
+      // Rückfall: diese Zeile als Bild (24 px/mm)
+      const r = 24, w = measure(o.s, o.f, o.size) + 1, h = o.size * 1.45, cvx = document.createElement('canvas');
+      cvx.width = Math.ceil(w * r); cvx.height = Math.ceil(h * r);
+      const c = cvx.getContext('2d'); c.fillStyle = '#fff'; c.fillRect(0, 0, cvx.width, cvx.height); c.scale(r, r); c.font = cssFont(o.f, o.size); c.fillStyle = o.col; c.fillText(o.s, .5, o.size * 1.1);
+      const bin = atob(cvx.toDataURL('image/jpeg', .95).split(',')[1]), jpg = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) jpg[i] = bin.charCodeAt(i);
+      images.push({ jpg, w:cvx.width, h:cvx.height });
+      const top = o.y - o.size * 1.1, xl = x0 - .5;
+      cs.push(`q ${n(cvx.width / r * K)} 0 0 ${n(cvx.height / r * K)} ${X(xl)} ${Y(top + cvx.height / r)} cm /Im${images.length} Do Q`);
+    } else if (o.t === 'line'){
+      cs.push(`${rgb(o.col)} RG ${n(o.lw * K)} w 1 J ${X(o.x1)} ${Y(o.y1)} m ${X(o.x2)} ${Y(o.y2)} l S`);
+    } else if (o.t === 'circle'){
+      const { x, y, r } = o, k = r * bez;
+      cs.push(`${rgb(o.col)} rg ${X(x + r)} ${Y(y)} m ${X(x + r)} ${Y(y + k)} ${X(x + k)} ${Y(y + r)} ${X(x)} ${Y(y + r)} c ${X(x - k)} ${Y(y + r)} ${X(x - r)} ${Y(y + k)} ${X(x - r)} ${Y(y)} c ${X(x - r)} ${Y(y - k)} ${X(x - k)} ${Y(y - r)} ${X(x)} ${Y(y - r)} c ${X(x + k)} ${Y(y - r)} ${X(x + r)} ${Y(y - k)} ${X(x + r)} ${Y(y)} c f`);
+    } else if (o.t === 'rrect'){
+      const { x, y, w, h } = o, r = Math.min(o.r, w / 2, h / 2), k = r * (1 - bez);
+      cs.push(`${rgb(o.col)} RG ${n(o.lw * K)} w 1 j ${o.dash ? '[' + o.dash.map(d => n(d * K)).join(' ') + '] 0 d' : '[] 0 d'} ` +
+        `${X(x + r)} ${Y(y)} m ${X(x + w - r)} ${Y(y)} l ${X(x + w - k)} ${Y(y)} ${X(x + w)} ${Y(y + k)} ${X(x + w)} ${Y(y + r)} c ` +
+        `${X(x + w)} ${Y(y + h - r)} l ${X(x + w)} ${Y(y + h - k)} ${X(x + w - k)} ${Y(y + h)} ${X(x + w - r)} ${Y(y + h)} c ` +
+        `${X(x + r)} ${Y(y + h)} l ${X(x + k)} ${Y(y + h)} ${X(x)} ${Y(y + h - k)} ${X(x)} ${Y(y + h - r)} c ` +
+        `${X(x)} ${Y(y + r)} l ${X(x)} ${Y(y + k)} ${X(x + k)} ${Y(y)} ${X(x + r)} ${Y(y)} c h S [] 0 d`);
+    }
+  }
+  // PDF-Datei zusammensetzen
   const enc = new TextEncoder(), parts = [], offs = []; let len = 0;
   const add = x => { const b = typeof x === 'string' ? enc.encode(x) : x; parts.push(b); len += b.length; };
-  const obj = (n, body) => { offs[n] = len; add(`${n} 0 obj\n${body}\nendobj\n`); };
-  const PW = 841.89, PH = 595.28, content = `q ${PW} 0 0 ${PH} 0 0 cm /Im0 Do Q`;
+  const obj = (i, body) => { offs[i] = len; add(`${i} 0 obj\n${body}\nendobj\n`); };
+  const content = cs.join('\n'), nF = FONTS.length, firstImg = 5 + nF;
+  const xobj = images.map((im, i) => `/Im${i + 1} ${firstImg + i} 0 R`).join(' ');
   add('%PDF-1.4\n'); add(new Uint8Array([37, 199, 236, 143, 162, 10]));
   obj(1, '<< /Type /Catalog /Pages 2 0 R >>');
   obj(2, '<< /Type /Pages /Kids [3 0 R] /Count 1 >>');
-  obj(3, `<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${PW} ${PH}] /Resources << /XObject << /Im0 4 0 R >> >> /Contents 5 0 R >>`);
-  offs[4] = len; add(`4 0 obj\n<< /Type /XObject /Subtype /Image /Width ${w} /Height ${h} /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ${jpg.length} >>\nstream\n`); add(jpg); add('\nendstream\nendobj\n');
-  obj(5, `<< /Length ${content.length} >>\nstream\n${content}\nendstream`);
-  obj(6, `<< /Title (${title.replace(/[^\x20-\x7e]/g, '_').replace(/[()\\]/g, '')}) /Creator (Rosas Tablet) >>`);
-  const xref = len;
-  add(`xref\n0 7\n0000000000 65535 f \n` + [1, 2, 3, 4, 5, 6].map(n => String(offs[n]).padStart(10, '0') + ' 00000 n \n').join(''));
-  add(`trailer\n<< /Size 7 /Root 1 0 R /Info 6 0 R >>\nstartxref\n${xref}\n%%EOF\n`);
+  obj(3, `<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${n(297 * K)} ${n(210 * K)}] /Resources << /Font << ${FONTS.map((f, i) => `/F${i + 1} ${5 + i} 0 R`).join(' ')} >>${xobj ? ' /XObject << ' + xobj + ' >>' : ''} >> /Contents 4 0 R >>`);
+  obj(4, `<< /Length ${enc.encode(content).length} >>\nstream\n${content}\nendstream`);
+  FONTS.forEach((f, i) => obj(5 + i, `<< /Type /Font /Subtype /Type1 /BaseFont /${CF[f].pdf} /Encoding /WinAnsiEncoding >>`));
+  images.forEach((im, i) => { offs[firstImg + i] = len; add(`${firstImg + i} 0 obj\n<< /Type /XObject /Subtype /Image /Width ${im.w} /Height ${im.h} /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ${im.jpg.length} >>\nstream\n`); add(im.jpg); add('\nendstream\nendobj\n'); });
+  const info = firstImg + images.length;
+  obj(info, `<< /Title (${title.replace(/[^\x20-\x7e]/g, '_').replace(/[()\\]/g, '')}) /Creator (Rosas Tablet) >>`);
+  const xref = len, total = info + 1;
+  add(`xref\n0 ${total}\n0000000000 65535 f \n` + Array.from({ length:info }, (_, i) => String(offs[i + 1]).padStart(10, '0') + ' 00000 n \n').join(''));
+  add(`trailer\n<< /Size ${total} /Root 1 0 R /Info ${info} 0 R >>\nstartxref\n${xref}\n%%EOF\n`);
   return new Blob(parts, { type:'application/pdf' });
 }
 const certFile = () => fname(INHALT.cert) + '.pdf';
-async function fontsReady(){ try { await Promise.all([document.fonts.load('800 40px "Baloo 2"'), document.fonts.load('700 40px "Baloo 2"')]); } catch (e) {} }
-async function renderCert(){ await fontsReady(); drawCert($('#certCv')); }
+async function renderCert(){ drawCert($('#certCv')); }
 function openCert(){ $('#certName').textContent = certFile(); $('#certMsg').textContent = ''; $('#cert').hidden = false; renderCert(); $('#certPdf').focus(); }
 $('#certClose').onclick = async () => {
   $('#cert').hidden = true;
@@ -1109,9 +1162,7 @@ $('#certClose').onclick = async () => {
 };
 $('#certPdf').onclick = async () => {
   await renderCert();
-  const c = $('#certCv'), bin = atob(c.toDataURL('image/jpeg', .9).split(',')[1]), jpg = new Uint8Array(bin.length);
-  for (let i = 0; i < bin.length; i++) jpg[i] = bin.charCodeAt(i);
-  const name = certFile(), blob = pdfFromJpeg(jpg, c.width, c.height, name), url = URL.createObjectURL(blob);
+  const name = certFile(), blob = certPdf(name), url = URL.createObjectURL(blob);
   const a = document.createElement('a'); a.href = url; a.download = name; document.body.appendChild(a); a.click(); a.remove();
   setTimeout(() => URL.revokeObjectURL(url), 60000);
   G.cert = true; save(); updateGoal();

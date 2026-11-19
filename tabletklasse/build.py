@@ -101,8 +101,12 @@ def main():
         "poster-a1-kacheln.typ": f"Tablet-Regeln Plakat A1 aus 4xA3 {R['klasse']}.pdf",
         "uebersicht.typ": "Workshop Tabletklasse Übersicht.pdf",
     }
-    for typ, pdf in pdfs.items():
-        subprocess.run(["typst", "compile", "--input", f"url={URL}", "--input", f"spiel={SPIEL}", str(DRUCK / typ), str(ICLOUD / pdf)], check=True)
+    jobs = [(typ, pdf, []) for typ, pdf in pdfs.items()]
+    jobs.append(("poster-a1-kacheln.typ", f"Tablet-Regeln Plakat A1 aus 4xA3 schwarz-weiß {R['klasse']}.pdf", ["--input", "sw=1"]))
+    jobs.append(("poster-a3.typ", f"Tablet-Regeln Plakat A3 schwarz-weiß {R['klasse']}.pdf", ["--input", "sw=1"]))
+    jobs.append(("poster-a1-schnitt.typ", f"Tablet-Regeln Plakat A1 aus 4xA3 Schnittversion schwarz-weiß {R['klasse']}.pdf", ["--input", "sw=1"]))
+    for typ, pdf, extra in jobs:
+        subprocess.run(["typst", "compile", "--input", f"url={URL}", "--input", f"spiel={SPIEL}", *extra, str(DRUCK / typ), str(ICLOUD / pdf)], check=True)
         print("PDF:", ICLOUD / pdf)
     shutil.copy2(out, ICLOUD / "Workshop Tabletklasse.html")
     shutil.copy2(spiel, ICLOUD / "rosas-tablet.html")   # gleicher Name, damit der Link aus der Präsentation auch offline klappt

@@ -1,10 +1,12 @@
-// Plakatinhalt für eine A3-Fläche (297 × 420 mm). Genutzt von poster-a3.typ und poster-a1-kacheln.typ.
+// Plakatinhalt für eine A3-Fläche (297 × 420 mm). Genutzt von poster-a3.typ und poster-a1-kacheln.typ (farbig und schwarz-weiß).
 #import "icons.typ": icon
 #let R = json("regeln.json")
-#let teal = rgb("#1f7a72")
-#let orange = rgb("#d9702a")
 
-#let plakat() = block(width: 297mm, height: 420mm, inset: (x: 18mm, top: 15mm, bottom: 13mm), breakable: false, {
+// sw: true = Schwarz-Weiß (Teal wird Schwarz, Orange wird Dunkelgrau)
+#let plakat(sw: false) = {
+let teal = if sw { luma(0) } else { rgb("#1f7a72") }
+let orange = if sw { luma(85) } else { rgb("#d9702a") }
+block(width: 297mm, height: 420mm, inset: (x: 18mm, top: 15mm, bottom: 13mm), breakable: false, {
 set text(font: "Avenir Next", size: 15pt, lang: "de")
 set par(leading: 0.6em)
 
@@ -44,3 +46,4 @@ v(5mm)
 line(length: 100%, stroke: 0.8pt + luma(170))
 text(10.5pt, fill: luma(80))[#R.verpflichtung #h(1fr) #R.schule]
 })
+}

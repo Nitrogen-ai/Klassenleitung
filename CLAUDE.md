@@ -21,6 +21,8 @@
   Rosas Säurelabor. Tisch 1 Classroom/Docs/Sheets/Präsentationen als Klick-Simulation,
   Tisch 2 GoodNotes-Werkzeugleiste 1–24 (Positionen auf `assets/werkzeuge.jpg`),
   Zertifikat-PDF heißt `JJJJ-MM-TT-Zertifikat-Nachname.pdf`. Verlinkt auf Folie 8.
+  Space-Design wie Rosas Proteine (Chemie-Repo): `space-theme.css`/`space-theme.js` setzt build.py als
+  Themenschicht ein (Raum, Tische, Textur, Rosa-Antenne, Holo-Sprechblase); jede Ersetzung wird geprüft.
 - `druck/plakat.typ` ist der Plakatinhalt; `poster-a3.typ` (A3) und
   `poster-a1-kacheln.typ` (A1 aus 4 × A3 mit Schnittlinien, `--input sw=1` = schwarz-weiß) nutzen ihn.
 - `poster-a1-schnitt.typ`: eigenes A1-Layout aus 4 × A3, Nähte liegen in weißen Lücken

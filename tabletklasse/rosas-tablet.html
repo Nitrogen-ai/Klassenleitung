@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Rosas Tablet</title>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&display=swap">
+<title>Rosas Tablet im All</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&family=Orbitron:wght@500;700;900&family=Share+Tech+Mono&display=swap">
 <!--
   Rosas Tablet · Übungsspiel zum Workshop Tabletklasse (Classroom, Docs/Sheets/Präsentationen, GoodNotes-Werkzeugleiste 1–24)
   Stil wie Rosas Säurelabor (Chemie 9): Canvas-Klassenzimmer, Rosa läuft zu den Tischen, Comic-Fenster je Tisch, Zertifikat als PDF.
@@ -187,6 +187,81 @@ input[type=text]{font:inherit;width:100%;box-sizing:border-box;border:2px solid 
 #turn{display:none}
 @media (orientation:portrait) and (max-width:820px){#turn{display:flex;position:fixed;inset:0;z-index:20;background:var(--stageBg);color:var(--paper);align-items:center;justify-content:center;text-align:center;padding:24px;font-size:20px;line-height:1.4;font-family:var(--display)}}
 @media (prefers-reduced-motion:reduce){#st.pop{animation:none}#sim .pulse{animation:none}}
+/* ---------- Space-Thema wie Rosas Proteine (Raumstation Peptidia) ---------- */
+:root{
+  --ink:#0b1020; --paper:#e6ecff; --brass:#4ef0ff; --brassL:#ffd23f; --teal:#1593a8; --tealL:#4ef0ff;
+  --ok:#3ee08f; --okL:#0f2e25; --bad:#ff5a6e; --badL:#3a1420; --warn:#ffb84d; --warnL:#33240c;
+  --stageBg:#05070f; --mag:#ff4fd8; --cyan:#4ef0ff; --panel:#0d1430; --panel2:#141d3d; --line:#2c3a6b;
+  --display:"Orbitron","Trebuchet MS",system-ui,sans-serif; --mono:"Share Tech Mono","Courier New",monospace
+}
+html,body{background:radial-gradient(1px 1px at 20% 30%,#fff8,transparent),radial-gradient(1px 1px at 70% 80%,#fff6,transparent),radial-gradient(1.5px 1.5px at 85% 15%,#fff9,transparent),var(--stageBg)}
+button{color:var(--paper);background:linear-gradient(#1f2a52,#0d1430);border:2px solid var(--cyan);border-radius:.2em .9em .2em .9em;box-shadow:0 0 .5em rgba(78,240,255,.35),inset 0 1px 0 rgba(255,255,255,.18);font-family:var(--display);font-size:.85em;letter-spacing:.04em}
+button:hover,button:focus-visible{background:linear-gradient(#3a1f5c,#1b0d33);border-color:var(--mag);box-shadow:0 0 .8em rgba(255,79,216,.6)}
+#goal{background:rgba(5,9,22,.82);border:2px solid var(--cyan);border-radius:.2em 1em .2em 1em;box-shadow:0 0 .8em rgba(78,240,255,.3);font-family:var(--mono);font-size:1.05em}
+#goal b{color:var(--brassL);font-family:var(--display);font-size:.85em;letter-spacing:.06em}
+#bottom{background:linear-gradient(transparent,rgba(5,7,15,.92) 45%)}
+#label{font-family:var(--mono);font-size:1.1em;color:var(--cyan);text-shadow:0 0 6px rgba(78,240,255,.7)}
+
+/* Titelkarte im Stil eines Pulp-Comic-Covers */
+.card{background:radial-gradient(ellipse at 50% 120%,rgba(255,79,216,.25),transparent 60%),radial-gradient(ellipse at 50% -20%,rgba(78,240,255,.18),transparent 55%),rgba(5,7,15,.94)}
+.card::before{content:"";position:absolute;inset:0;pointer-events:none;background-image:radial-gradient(1.5px 1.5px at 12% 22%,#fff,transparent),radial-gradient(1px 1px at 33% 75%,#fffa,transparent),radial-gradient(2px 2px at 58% 12%,#fff,transparent),radial-gradient(1px 1px at 77% 64%,#fff8,transparent),radial-gradient(1.5px 1.5px at 91% 38%,#fff,transparent),radial-gradient(1px 1px at 5% 88%,#fff9,transparent),radial-gradient(1px 1px at 46% 46%,#fff6,transparent)}
+.card>*{position:relative}
+.card h1{font-family:var(--display);font-weight:900;font-size:4.2em;font-style:italic;letter-spacing:.02em;transform:skew(-6deg);
+  background:linear-gradient(#fff6b0 0%,#ffd23f 35%,#ff8a1f 70%,#d6261e 100%);-webkit-background-clip:text;background-clip:text;color:transparent;
+  -webkit-text-stroke:.03em #2a0c3a;filter:drop-shadow(.06em .08em 0 #2a0c3a) drop-shadow(0 0 .3em rgba(255,138,31,.55))}
+.kicker{font-family:var(--mono);color:var(--cyan);letter-spacing:.2em;text-shadow:0 0 8px rgba(78,240,255,.6)}
+.card button#bStart,.card .row button{font-size:1.2em;background:linear-gradient(#ffd23f,#ff8a1f);color:#1a0b22;border-color:#fff3a8;box-shadow:0 0 1em rgba(255,138,31,.6),inset 0 2px 0 rgba(255,255,255,.5)}
+.card .row button:hover{background:linear-gradient(#fff3a8,#ffd23f)}
+
+/* Stationsfenster als Datapad */
+#st,#ov,#cert{background:var(--panel);color:var(--paper);border:.3cqw solid #7e8aa8;border-radius:.4cqw 1.6cqw .4cqw 1.6cqw;box-shadow:0 0 0 .25cqw #0b1020,0 0 2cqw rgba(78,240,255,.35)}
+.st-head{background:linear-gradient(90deg,#1a2238,#28324f 60%,#3a1f5c);color:var(--paper);border-bottom:2px solid var(--cyan)}
+.st-head h2{font-family:var(--display);font-weight:700;letter-spacing:.03em;color:#fff}
+.st-lp{background:var(--brassL);color:#1a0b22;font-family:var(--display);border-radius:.2em .6em;box-shadow:0 0 .6em rgba(255,210,63,.6)}
+.st-left{background:#0a1028;border-right:2px solid var(--line)}
+#stCap{color:#9fb0dd;font-family:var(--mono)}
+.st-right{background:linear-gradient(rgba(78,240,255,.03) 50%,transparent 50%) 0 0/100% 4px,var(--panel);scrollbar-color:var(--cyan) var(--panel)}
+.st-right h3{font-family:var(--display);font-weight:700;color:var(--cyan);letter-spacing:.03em;font-size:1.1em}
+.ctx{background:#1a1735;border:2px dashed var(--mag);color:#f1e6ff}
+.srcnote,.credits{color:#8c9acb}
+.next{font-family:var(--display);font-weight:700;font-size:1em;letter-spacing:.03em;color:#1a0b22;background:linear-gradient(#ffd23f,#ff8a1f);border:2px solid #fff3a8;border-radius:.2em 1em .2em 1em;box-shadow:0 0 .9em rgba(255,138,31,.45)}
+.next:hover,.next:focus-visible{background:linear-gradient(#fff3a8,#ffd23f);color:#1a0b22}
+.next::before{content:"» "}
+.mc{background:var(--panel2);border:2px solid var(--line);border-radius:.3em 1em .3em 1em}
+.nr{color:var(--mag);font-family:var(--mono)}
+.opt{color:var(--paper);background:#0a1028;border:2px solid var(--line);font-family:inherit;font-size:1em;letter-spacing:0;border-radius:.3em;box-shadow:none}
+.opt:hover,.opt:focus-visible{background:#1b1440;color:#fff;border-color:var(--mag);box-shadow:0 0 .6em rgba(255,79,216,.45)}
+.opt.wrong{background:var(--badL);border-color:var(--bad);color:#ffd5db}
+.reveal{background:var(--okL);border:2px solid var(--ok);box-shadow:0 0 .7em rgba(62,224,143,.3)}
+.back{color:#05070f;background:var(--cyan);border:2px solid #c9fbff;font-family:var(--display);box-shadow:0 0 .9em rgba(78,240,255,.5)}
+#certBody input[type=text],#start input[type=text]{background:#0a1028;color:#fff;border-color:var(--cyan);font-family:var(--mono)}
+#certBody .acts button,.st-head .langBtn{color:#1a0b22;background:var(--brassL);border-color:var(--brassL)}
+.reveal .lbl{font-family:var(--display)}
+#gcv{border:.2cqw solid var(--cyan);box-shadow:0 0 .8em rgba(78,240,255,.3)}
+.tabframe{background:#0b1020;box-shadow:0 0 0 .2em #7e8aa8,0 0 1.2em rgba(78,240,255,.35)}
+#simMsg{background:var(--panel2);color:var(--paper);border-color:var(--line);font-family:var(--mono)}
+#simMsg b{color:var(--cyan)}
+#simMsg.bad{background:var(--badL);border-color:var(--bad)}#simMsg.ok{background:var(--okL);border-color:var(--ok)}
+#sim button{box-shadow:none;letter-spacing:0;font-family:inherit;font-size:inherit;border-radius:.4em}
+#sim button:hover{box-shadow:none}
+.chips button{color:var(--paper);background:var(--panel2);border-color:var(--line);font-family:var(--mono);box-shadow:none}
+.chips button.on{background:var(--brassL);color:#111;border-color:var(--brassL)}
+.chips button.done{background:var(--okL);color:var(--ok);border-color:var(--ok)}
+.nr{background:var(--mag);color:#fff;font-family:var(--mono)}
+.ctx b.who{color:var(--mag);font-family:var(--display)}
+.check{background:var(--panel2);border-color:var(--line);color:var(--paper)}
+.check.ok{background:var(--okL);border-color:var(--ok)}
+.simstate{background:#0f2238;border-left-color:var(--cyan)}
+.simstate.ok{background:var(--okL);border-color:var(--ok)}
+.tipbtn{color:var(--paper);background:var(--panel2);border-color:var(--gold,#ffd23f)}
+.tip{background:#1a1735;border-left-color:var(--brassL)}
+.why{background:var(--badL);border-left-color:var(--bad);color:#ffd5db}
+.wait{color:#9fb0dd}
+.fn{background:#0a1028;color:var(--brassL);border-color:var(--brassL);font-family:var(--mono)}
+input[type=text]{background:#0a1028;color:#fff;border-color:var(--cyan);font-family:var(--mono)}
+.names label{color:var(--cyan);font-family:var(--display);font-size:.85em}
+#certCv{border-color:var(--line)}
+.srcnote{color:#9fb0dd}
 </style>
 </head>
 <body>
@@ -204,7 +279,7 @@ input[type=text]{font:inherit;width:100%;box-sizing:border-box;border:2px solid 
   <div id="bottom" class="ui"><div id="label" aria-live="polite"></div></div>
 
   <div id="start" class="ui card">
-    <div class="kicker">Klasse 9.1 · Workshop Tabletklasse</div>
+    <div class="kicker">Klasse 9.1 · Workshop Tabletklasse · Raumstation 9.1</div>
     <h1>Rosas Tablet</h1>
     <p>Rosa zeigt dir das Klassenzimmer der Tabletklasse. An <b>Tisch 1</b> übst du Google Classroom, Docs, Sheets und Präsentationen, an <b>Tisch 2</b> alle Werkzeuge von GoodNotes. Zu jedem Schritt gibt es einen Auftrag für dein echtes Tablet und kurze Fragen. Am Ende bekommst du dein Zertifikat als PDF für die Abgabe im Classroom.</p>
     <p><small><b>Tippen:</b> gehen, Tisch öffnen, Rosa um Rat fragen · <b>Tastatur:</b> Tab wählt, Enter öffnet, Esc führt zurück</small></p>
@@ -759,6 +834,7 @@ function drawRosa(a, beat, sc){
   poly([-30, -78, 30, -84, 26, -118, -22, -118], P.hat, P.ink, 4);
   poly([-28, -88, 28, -94, 28, -84, -28, -78], P.rose);
   circ(-24, -96, 11, P.rose, P.ink, 3); circ(-24, -96, 5, P.roseL);
+  line(4, -118, 14, -158, P.ink, 4); circ(15, -164, 9, (beat % 1) < .5 ? '#4ef0ff' : '#ff4fd8', P.ink, 3);
   ctx.restore();
   ctx.restore();
 }
@@ -1290,8 +1366,8 @@ function drawSpeech(){
   const wMax = Math.max(...lines.map(l => ctx.measureText(l).width)), s = depth(rosa.y);
   const bw = wMax + 56, bh = lines.length * lh + 34;
   const x = Math.max(24 + bw / 2, Math.min(W - 24 - bw / 2, rosa.x)), y = Math.max(110, rosa.y - 360 * s - bh), l = x - bw / 2;
-  poly([l, y + 6, l + bw - 4, y, l + bw, y + bh - 4, rosa.x + 30, y + bh, rosa.x + 6, y + bh + 40, rosa.x - 6, y + bh + 2, l + 6, y + bh + 4], P.cloud, P.ink, 5);
-  ctx.textAlign = 'center'; lines.forEach((ln, i) => { ctx.fillStyle = P.ink; ctx.fillText(ln, x, y + 20 + fs * .9 + i * lh); }); ctx.textAlign = 'left';
+  poly([l, y + 6, l + bw - 4, y, l + bw, y + bh - 4, rosa.x + 30, y + bh, rosa.x + 6, y + bh + 40, rosa.x - 6, y + bh + 2, l + 6, y + bh + 4], 'rgba(8,14,36,.94)', '#4ef0ff', 5);
+  ctx.textAlign = 'center'; lines.forEach((ln, i) => { ctx.fillStyle = '#e6ecff'; ctx.fillText(ln, x, y + 20 + fs * .9 + i * lh); }); ctx.textAlign = 'left';
 }
 function update(dt){
   beat += dt * BPM / 60;
@@ -1331,6 +1407,150 @@ function renderTexture(){
   const t = tex.getContext('2d'), r = rnd(7);
   for (let i = 0; i < 9000; i++){ t.fillStyle = r() < .5 ? 'rgba(255,240,210,.09)' : 'rgba(40,20,50,.09)'; const x = r() * W, y = r() * H, w = 1 + r() * 4; t.fillRect(x, y, w, w * (.4 + r())); }
 }
+// ---------- Space-Thema (wie Rosas Proteine „Raumstation Peptidia“): ersetzt Raum, Tische, Textur ----------
+function ell(x, y, rx, ry, fill, stroke, lw){ ctx.beginPath(); ctx.ellipse(x, y, Math.max(.1, rx), Math.max(.1, ry), 0, 0, Math.PI * 2); if (fill){ ctx.fillStyle = fill; ctx.fill(); } if (stroke){ ctx.strokeStyle = stroke; ctx.lineWidth = lw || 4; ctx.stroke(); } }
+const SP = { void:'#05070f', hull:'#1a2238', hullL:'#28324f', hullXL:'#3a4669', seam:'#0b1020', cyan:'#4ef0ff', cyanD:'#1593a8',
+  mag:'#ff4fd8', gold:'#ffd23f', orange:'#ff8a1f', lime:'#7dff6a', red:'#ff4a5e', steel:'#c9d2e3', steelD:'#8d98b2', grate:'#141a2c' };
+const STARS = (() => { const r = rnd(42), a = []; for (let i = 0; i < 140; i++) a.push([r(), r(), .4 + r() * 1.8, r() * 6.28]); return a; })();
+function rivets(x1, y1, x2, y2, n, col){ for (let i = 0; i <= n; i++){ const k = i / n; circ(x1 + (x2 - x1) * k, y1 + (y2 - y1) * k, 4, col || SP.hullXL, SP.seam, 2); } }
+function hazard(x, y, w, h){
+  ctx.save(); ctx.beginPath(); ctx.rect(x, y, w, h); ctx.clip(); ctx.fillStyle = SP.gold; ctx.fillRect(x, y, w, h);
+  for (let k = -h; k < w + h; k += 34) poly([x + k, y + h, x + k + 17, y + h, x + k + 17 + h, y, x + k + h, y], '#111'); ctx.restore();
+  ctx.strokeStyle = SP.seam; ctx.lineWidth = 3; ctx.strokeRect(x, y, w, h);
+}
+function neonTxt(c, s, x, y, size, col, font, align){
+  c.save(); c.font = `${size}px ${font || '"Orbitron","Trebuchet MS",sans-serif'}`; c.textAlign = align || 'left';
+  c.shadowColor = col; c.shadowBlur = size * .45; c.fillStyle = col; c.fillText(s, x, y); c.shadowBlur = 0; c.fillStyle = 'rgba(255,255,255,.85)'; c.fillText(s, x, y); c.restore();
+}
+function porthole(cx, cy, r, planet){
+  circ(cx, cy, r + 26, SP.steelD, SP.seam, 6); circ(cx, cy, r + 12, SP.hullL, SP.seam, 4);
+  for (let i = 0; i < 12; i++){ const a = i * Math.PI / 6; circ(cx + Math.cos(a) * (r + 19), cy + Math.sin(a) * (r + 19), 4, SP.steel, SP.seam, 2); }
+  ctx.save(); ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.clip();
+  const g = ctx.createRadialGradient(cx - r * .3, cy - r * .4, 10, cx, cy, r * 1.2); g.addColorStop(0, '#1b1446'); g.addColorStop(1, '#03040c');
+  ctx.fillStyle = g; ctx.fillRect(cx - r, cy - r, r * 2, r * 2);
+  const rr = rnd(cx | 0); for (let i = 0; i < 70; i++) circ(cx - r + rr() * r * 2, cy - r + rr() * r * 2, rr() * 1.8 + .3, 'rgba(255,255,255,' + (.4 + rr() * .6) + ')');
+  if (planet){ const [px, py, pr, c1, c2] = planet;
+    const pg = ctx.createRadialGradient(px - pr * .4, py - pr * .4, pr * .1, px, py, pr); pg.addColorStop(0, c1); pg.addColorStop(1, c2);
+    ctx.save(); ctx.translate(px, py); ctx.rotate(-.35); ell(0, 0, pr * 1.9, pr * .42, null, 'rgba(255,210,140,.55)', 5); ctx.restore();
+    circ(px, py, pr, pg);
+    ctx.save(); ctx.beginPath(); ctx.arc(px, py, pr, 0, Math.PI * 2); ctx.clip(); for (let k = -3; k < 4; k++) line(px - pr, py + k * pr * .25, px + pr, py + k * pr * .25 - 8, 'rgba(255,255,255,.12)', 6); ctx.restore();
+    ctx.save(); ctx.translate(px, py); ctx.rotate(-.35); ctx.beginPath(); ctx.ellipse(0, 0, pr * 1.9, pr * .42, 0, 0, Math.PI); ctx.strokeStyle = 'rgba(255,210,140,.75)'; ctx.lineWidth = 5; ctx.stroke(); ctx.restore(); }
+  ctx.restore();
+  ctx.save(); ctx.beginPath(); ctx.arc(cx, cy, r - 8, Math.PI * 1.1, Math.PI * 1.45); ctx.strokeStyle = 'rgba(255,255,255,.35)'; ctx.lineWidth = 8; ctx.stroke(); ctx.restore();
+}
+function airlock(x1, x2, top, bot, sign, col, label1, label2){
+  const w = x2 - x1;
+  poly([x1 - 8, top - 14, x2 + 8, top - 18, x2 + 10, bot + 6, x1 - 10, bot + 12], SP.hullXL, SP.seam, 6);
+  poly([x1, top, x2, top - 4, x2, bot, x1, bot + 6], '#59647f', SP.seam, 4);
+  line(x1 + w / 2, top, x1 + w / 2, bot + 3, SP.seam, 4);
+  for (let y = top + 40; y < bot - 20; y += 70) line(x1 + 8, y, x2 - 8, y - 2, 'rgba(11,16,32,.35)', 3);
+  hazard(x1 + 4, bot - 46, w - 8, 30);
+  poly([x1 + 8, top + 46, x2 - 8, top + 42, x2 - 8, top + 120, x1 + 8, top + 124], SP.seam, col, 3);
+  ctx.save(); ctx.font = 'bold 12px "Orbitron","Trebuchet MS",sans-serif'; ctx.textAlign = 'center'; ctx.fillStyle = col; ctx.shadowColor = col; ctx.shadowBlur = 8;
+  ctx.fillText(label1, x1 + w / 2, top + 76); ctx.fillText(label2, x1 + w / 2, top + 104); ctx.restore();
+  circ(x1 + w / 2, top + 210, 22, '#0b1020', SP.steel, 5); circ(x1 + w / 2 - 6, top + 204, 5, 'rgba(255,255,255,.4)');
+  circ(x1 + w / 2, top + 22, 8, col, SP.seam, 2);
+  if (sign){ ctx.save(); ctx.translate(x1 + w / 2, top + 300); ctx.rotate(-.06);
+    poly([-44, -22, 44, -24, 46, 26, -42, 28], '#fff59a', '#333', 2);
+    ctx.fillStyle = '#222'; ctx.font = 'bold 11px "Trebuchet MS",sans-serif'; ctx.textAlign = 'center'; sign.forEach((s, i) => ctx.fillText(s, 2, -6 + i * 14)); ctx.restore(); }
+}
+drawRoom = function(c){
+  ctxSwap(c, () => {
+    ctx.fillStyle = SP.void; ctx.fillRect(0, 0, W, H);
+    const wg = ctx.createLinearGradient(0, 0, 0, 600); wg.addColorStop(0, '#111830'); wg.addColorStop(1, SP.hullL);
+    ctx.fillStyle = wg; ctx.fillRect(0, 0, W, 600);
+    for (let x = 0; x < W; x += 240){ line(x, 90, x, 594, SP.seam, 4); line(x + 3, 90, x + 3, 594, 'rgba(255,255,255,.05)', 2); rivets(x + 16, 110, x + 16, 570, 9); }
+    line(0, 455, W, 455, SP.seam, 4); line(0, 458, W, 458, 'rgba(78,240,255,.25)', 2);
+    poly([0, 0, W, 0, W, 80, 0, 94], '#0a0f20'); line(0, 92, W, 79, SP.cyanD, 4);
+    for (let x = 60; x < W; x += 320){ ctx.save(); ctx.shadowColor = SP.cyan; ctx.shadowBlur = 24; poly([x, 34, x + 200, 32, x + 200, 46, x, 48], SP.cyan); ctx.restore(); }
+    poly([0, 600, W, 590, W, H, 0, H], SP.grate);
+    for (let i = -8; i <= 14; i++) line(960 + i * 95, 596, 960 + i * 210, H, 'rgba(78,240,255,.13)', 3);
+    for (const y of [700, 830, 980]) line(0, y, W, y - 6, 'rgba(78,240,255,.10)', 3);
+    hazard(0, 592, W, 18);
+    // Hauptbildschirm mit Tagesplan
+    poly([628, 100, 1302, 94, 1308, 434, 624, 442], SP.steelD, SP.seam, 6);
+    poly([650, 118, 1280, 112, 1284, 414, 646, 420], '#020a12', SP.cyanD, 3);
+    for (let y = 122; y < 414; y += 6) line(652, y, 1280, y - 6, 'rgba(78,240,255,.05)', 2);
+    const mono = '"Share Tech Mono","Courier New",monospace';
+    neonTxt(c, 'Tabletklasse 9.1', 686, 176, 40, SP.cyan);
+    neonTxt(c, '> 1. Classroom, Docs, Sheets, Präsentationen', 694, 230, 23, SP.lime, mono);
+    neonTxt(c, '> 2. GoodNotes: Werkzeuge 1 bis 24', 694, 272, 23, SP.lime, mono);
+    neonTxt(c, '> 3. Zertifikat + Abgabe im Classroom', 694, 314, 23, SP.lime, mono);
+    neonTxt(c, 'JJJJ-MM-TT-Inhalt-Name', 694, 372, 28, SP.orange, mono);
+    neonTxt(c, '█', 1062, 372, 28, SP.orange, mono);
+    ctx.save(); ctx.translate(1206, 392); ctx.rotate(.08); poly([-70, -40, 70, -42, 72, 40, -68, 42], '#fff59a', '#333', 2);
+    ctx.fillStyle = '#222'; ctx.font = 'bold 15px "Trebuchet MS",sans-serif'; ctx.textAlign = 'center';
+    ctx.fillText('Akku unter 20 %?', 2, -12); ctx.fillText('Dann kein Warp.', 2, 8); ctx.fillText('(die Leitung)', 2, 28); ctx.restore();
+    // Regelplakat als Leuchttafel (gleiche Klickfläche POSTER)
+    const p = POSTER;
+    poly([p.x - 6, p.y - 6, p.x + p.w + 6, p.y - 10, p.x + p.w + 10, p.y + p.h + 6, p.x - 4, p.y + p.h + 10], SP.steelD, SP.seam, 5);
+    poly([p.x + 8, p.y + 8, p.x + p.w - 8, p.y + 4, p.x + p.w - 4, p.y + p.h - 8, p.x + 10, p.y + p.h - 4], '#0b0820', SP.mag, 3);
+    neonTxt(c, 'Unsere Tablets,', p.x + p.w / 2, p.y + 52, 24, SP.mag, null, 'center'); neonTxt(c, 'unsere Regeln', p.x + p.w / 2, p.y + 84, 24, SP.mag, null, 'center');
+    line(p.x + 30, p.y + 100, p.x + p.w - 30, p.y + 99, SP.gold, 3);
+    for (let r = 0; r < 2; r++) for (let q = 0; q < 2; q++) poly([p.x + 24 + q * 132, p.y + 116 + r * 52, p.x + 148 + q * 132, p.y + 116 + r * 52, p.x + 148 + q * 132, p.y + 160 + r * 52, p.x + 24 + q * 132, p.y + 160 + r * 52], 'rgba(78,240,255,.08)', SP.cyan, 2);
+    for (let r = 0; r < 5; r++) for (let q = 0; q < 2; q++){ const x = p.x + 24 + q * 132, y = p.y + 230 + r * 30; line(x, y, x, y + 22, SP.gold, 5); line(x + 12, y + 7, x + 110, y + 7, 'rgba(230,236,255,.45)', 3); line(x + 12, y + 16, x + 80, y + 16, 'rgba(230,236,255,.3)', 3); }
+    // Bullauge statt Fenster
+    porthole(1612, 268, 140, [1560, 300, 52, '#7fd0ff', '#1b3f8f']);
+    ctx.save(); ctx.translate(1612, 446); poly([-122, -14, 122, -16, 124, 14, -120, 16], SP.seam, SP.steelD, 2);
+    ctx.fillStyle = SP.steel; ctx.font = 'bold 13px "Orbitron","Trebuchet MS",sans-serif'; ctx.textAlign = 'center'; ctx.fillText('BITTE NICHT WINKEN', 0, 5); ctx.restore();
+    // Sternzeit
+    poly([1160, 40, 1290, 38, 1290, 82, 1160, 84], '#020a12', SP.mag, 3);
+    neonTxt(c, isoToday().slice(0, 7).replace('-', '.'), 1225, 70, 22, SP.mag, mono, 'center');
+    // Luftschleuse links
+    airlock(18, 112, 196, 626, ['Tablets nicht', 'ins All werfen'], SP.cyan, 'AUSGANG', '9.1');
+    // Ladestation rechts
+    poly([1836, 292, W, 288, W, 596, 1830, 600], SP.hullXL, SP.seam, 5);
+    for (let i = 0; i < 3; i++){ const y = 340 + i * 80; poly([1846, y - 30, W - 6, y - 32, W - 6, y + 30, 1846, y + 32], '#0b1020', SP.seam, 3);
+      ctx.save(); ctx.shadowColor = SP.lime; ctx.shadowBlur = 10; line(1856, y + 18, 1856 + 18 + i * 12, y + 18, SP.lime, 6); ctx.restore(); }
+    ctx.save(); ctx.font = 'bold 12px "Orbitron","Trebuchet MS",sans-serif'; ctx.fillStyle = SP.lime; ctx.textAlign = 'center'; ctx.fillText('LADEN', 1876, 284); ctx.restore();
+  });
+};
+drawDesk = function(d, time){
+  const s = d.sc, x = d.x, b = d.base, w = d.w, topY = d.top, pult = d.id === 'pult';
+  const done = d.label ? (d.st === 0 ? gMainDone() && (!G.cert || G.done['g-abgabe']) : d.st === 1 ? gnDone() : G.cert) : false;
+  const col = done ? SP.lime : SP.cyan;
+  ctx.save(); ctx.globalAlpha = .55 + .2 * Math.sin(time * 2.4 + x); ell(x, b + 2, w * .42, 16 * s, 'rgba(78,240,255,.35)'); ctx.restore();
+  // Schwebestuhl
+  if (!pult){ poly([x - 60 * s, topY - 76 * s, x + 60 * s, topY - 76 * s, x + 56 * s, topY - 10, x - 56 * s, topY - 10], '#3a1f5c', SP.seam, 4); line(x - 50 * s, topY - 70 * s, x + 50 * s, topY - 70 * s, SP.mag, 3); }
+  // Korpus
+  poly([x - w / 2 + 24, topY + 14, x + w / 2 - 24, topY + 14, x + w / 2 - 50, b - 22, x - w / 2 + 50, b - 22], SP.hullL, SP.seam, 5);
+  ctx.save(); ctx.shadowColor = col; ctx.shadowBlur = 16; line(x - w / 2 + 60, b - 30, x + w / 2 - 60, b - 30, col, 5); ctx.restore();
+  for (const k of [-1, 1]) circ(x + k * (w / 2 - 70), topY + 70 * s, 6, k < 0 ? SP.red : SP.lime, SP.seam, 2);
+  // Platte (perspektivisch)
+  poly([x - w / 2 + 26 * s, topY - 76 * s, x + w / 2 - 26 * s, topY - 76 * s, x + w / 2 + 4, topY, x - w / 2 - 4, topY], pult ? '#aeb9cf' : SP.steel, SP.seam, 5);
+  poly([x - w / 2 - 4, topY, x + w / 2 + 4, topY, x + w / 2 + 4, topY + 16, x - w / 2 - 4, topY + 16], SP.steelD, SP.seam, 4);
+  line(x - w / 2, topY + 14, x + w / 2, topY + 14, SP.cyanD, 4);
+  if (d.st === 0) flatTablet(d, 'google', time);
+  if (d.st === 1) flatTablet(d, 'goodnotes', time);
+  if (pult){
+    const ready = allDone();
+    poly([x - 70, topY - 50, x + 10, topY - 54, x + 20, topY - 10, x - 66, topY - 6], '#fffdf6', SP.seam, 3);
+    line(x - 54, topY - 36, x + 2, topY - 38, SP.gold, 3); line(x - 52, topY - 24, x - 4, topY - 26, 'rgba(43,29,46,.35)', 3);
+    circ(x + 70, topY - 30, 18, P.rose, SP.seam, 3); line(x + 70, topY - 12, x + 70, topY + 4, P.greenD, 4);
+    if (ready) sparkle(x - 28, topY - 70, 26 + Math.sin(time * 4) * 4, SP.lime);
+  }
+  if (!d.st && !pult){
+    const bx = x + w / 2 + 34 * s, by = b;
+    poly([bx - 30 * s, by, bx + 30 * s, by, bx + 34 * s, by - 76 * s, bx - 34 * s, by - 80 * s], d.id === 'deko1' ? SP.orange : '#3a1f5c', SP.seam, 4);
+    poly([bx - 20 * s, by - 10 * s, bx + 20 * s, by - 10 * s, bx + 20 * s, by - 40 * s, bx - 20 * s, by - 40 * s], 'rgba(255,255,255,.25)', SP.seam, 3);
+    ctx.beginPath(); ctx.arc(bx, by - 80 * s, 14 * s, Math.PI, 0); ctx.strokeStyle = SP.seam; ctx.lineWidth = 4; ctx.stroke();
+  }
+  if (d.label){
+    ctx.save(); ctx.translate(x, topY + 56 * s);
+    ctx.font = `bold ${Math.round(23 * s)}px "Orbitron","Trebuchet MS",sans-serif`;
+    const tw = ctx.measureText(d.label).width + 34 * s;
+    poly([-tw / 2, -25 * s, tw / 2, -25 * s, tw / 2 + 9, -3, tw / 2, 19 * s, -tw / 2, 19 * s, -tw / 2 - 9, -3], '#020a12', col, 3);
+    ctx.font = `bold ${Math.round(23 * s)}px "Orbitron","Trebuchet MS",sans-serif`; ctx.textAlign = 'center'; ctx.shadowColor = col; ctx.shadowBlur = 10; ctx.fillStyle = col; ctx.fillText(d.label, 0, 6 * s);
+    ctx.restore();
+    if (done){ sparkle(x + w / 2 - 20, topY - 60 * s, 30 * s, SP.lime); txt('✓', x + w / 2 - 20, topY - 48 * s, 30 * s, SP.seam); }
+  }
+};
+renderTexture = function(){
+  const t = tex.getContext('2d'); t.clearRect(0, 0, W, H);
+  for (let y = 0; y < H; y += 4){ t.fillStyle = 'rgba(0,0,0,.10)'; t.fillRect(0, y, W, 1); }
+  const r = rnd(7); for (let i = 0; i < 2500; i++){ t.fillStyle = r() < .5 ? 'rgba(78,240,255,.04)' : 'rgba(0,0,0,.06)'; t.fillRect(r() * W, r() * H, 2, 2); }
+};
+
 drawRoom(bg.getContext('2d')); renderTexture();
 if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => drawRoom(bg.getContext('2d')));
 applyTs(); setPressed($('#bSfx'), prefs.sfx);

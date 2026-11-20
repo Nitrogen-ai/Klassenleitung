@@ -44,6 +44,20 @@ def build_spiel():
     src = (HERE / "rosas-tablet.src.html").read_text(encoding="utf-8")
     src = src.replace("{{IMG:werkzeuge}}", img_uri("werkzeuge"))
     src = src.replace("{{REGELN}}", json.dumps(R, ensure_ascii=False))
+    # Space-Design wie Rosas Proteine (Themenschicht space-theme.css/.js)
+    css, js = (HERE / "space-theme.css").read_text(encoding="utf-8"), (HERE / "space-theme.js").read_text(encoding="utf-8")
+    for alt, neu in [("</style>", css + "</style>"),
+                     ("drawRoom(bg.getContext('2d')); renderTexture();\n", js + "\ndrawRoom(bg.getContext('2d')); renderTexture();\n"),
+                     ("family=Baloo+2:wght@500;700;800&display=swap", "family=Baloo+2:wght@500;700;800&family=Orbitron:wght@500;700;900&family=Share+Tech+Mono&display=swap"),
+                     ("<title>Rosas Tablet</title>", "<title>Rosas Tablet im All</title>"),
+                     ('<div class="kicker">Klasse 9.1 · Workshop Tabletklasse</div>', '<div class="kicker">Klasse 9.1 · Workshop Tabletklasse · Raumstation 9.1</div>'),
+                     ("  circ(-24, -96, 11, P.rose, P.ink, 3); circ(-24, -96, 5, P.roseL);\n  ctx.restore();\n  ctx.restore();\n}",
+                      "  circ(-24, -96, 11, P.rose, P.ink, 3); circ(-24, -96, 5, P.roseL);\n  line(4, -118, 14, -158, P.ink, 4); circ(15, -164, 9, (beat % 1) < .5 ? '#4ef0ff' : '#ff4fd8', P.ink, 3);\n  ctx.restore();\n  ctx.restore();\n}"),
+                     ("rosa.x - 6, y + bh + 2, l + 6, y + bh + 4], P.cloud, P.ink, 5);", "rosa.x - 6, y + bh + 2, l + 6, y + bh + 4], 'rgba(8,14,36,.94)', '#4ef0ff', 5);"),
+                     ("lines.forEach((ln, i) => { ctx.fillStyle = P.ink; ctx.fillText(ln, x, y + 20", "lines.forEach((ln, i) => { ctx.fillStyle = '#e6ecff'; ctx.fillText(ln, x, y + 20")]:
+        if src.count(alt) != 1:
+            sys.exit("Space-Thema: Stelle nicht eindeutig: " + alt[:60])
+        src = src.replace(alt, neu)
     if "{{" in src:
         sys.exit("Unersetzter Platzhalter in rosas-tablet.src.html: " + src[src.index("{{"):][:40])
     (HERE / "rosas-tablet.html").write_text(src, encoding="utf-8")

@@ -1,0 +1,75 @@
+/* ---------- Space-Thema wie Rosas Proteine (Raumstation Peptidia) ---------- */
+:root{
+  --ink:#0b1020; --paper:#e6ecff; --brass:#4ef0ff; --brassL:#ffd23f; --teal:#1593a8; --tealL:#4ef0ff;
+  --ok:#3ee08f; --okL:#0f2e25; --bad:#ff5a6e; --badL:#3a1420; --warn:#ffb84d; --warnL:#33240c;
+  --stageBg:#05070f; --mag:#ff4fd8; --cyan:#4ef0ff; --panel:#0d1430; --panel2:#141d3d; --line:#2c3a6b;
+  --display:"Orbitron","Trebuchet MS",system-ui,sans-serif; --mono:"Share Tech Mono","Courier New",monospace
+}
+html,body{background:radial-gradient(1px 1px at 20% 30%,#fff8,transparent),radial-gradient(1px 1px at 70% 80%,#fff6,transparent),radial-gradient(1.5px 1.5px at 85% 15%,#fff9,transparent),var(--stageBg)}
+button{color:var(--paper);background:linear-gradient(#1f2a52,#0d1430);border:2px solid var(--cyan);border-radius:.2em .9em .2em .9em;box-shadow:0 0 .5em rgba(78,240,255,.35),inset 0 1px 0 rgba(255,255,255,.18);font-family:var(--display);font-size:.85em;letter-spacing:.04em}
+button:hover,button:focus-visible{background:linear-gradient(#3a1f5c,#1b0d33);border-color:var(--mag);box-shadow:0 0 .8em rgba(255,79,216,.6)}
+#goal{background:rgba(5,9,22,.82);border:2px solid var(--cyan);border-radius:.2em 1em .2em 1em;box-shadow:0 0 .8em rgba(78,240,255,.3);font-family:var(--mono);font-size:1.05em}
+#goal b{color:var(--brassL);font-family:var(--display);font-size:.85em;letter-spacing:.06em}
+#bottom{background:linear-gradient(transparent,rgba(5,7,15,.92) 45%)}
+#label{font-family:var(--mono);font-size:1.1em;color:var(--cyan);text-shadow:0 0 6px rgba(78,240,255,.7)}
+
+/* Titelkarte im Stil eines Pulp-Comic-Covers */
+.card{background:radial-gradient(ellipse at 50% 120%,rgba(255,79,216,.25),transparent 60%),radial-gradient(ellipse at 50% -20%,rgba(78,240,255,.18),transparent 55%),rgba(5,7,15,.94)}
+.card::before{content:"";position:absolute;inset:0;pointer-events:none;background-image:radial-gradient(1.5px 1.5px at 12% 22%,#fff,transparent),radial-gradient(1px 1px at 33% 75%,#fffa,transparent),radial-gradient(2px 2px at 58% 12%,#fff,transparent),radial-gradient(1px 1px at 77% 64%,#fff8,transparent),radial-gradient(1.5px 1.5px at 91% 38%,#fff,transparent),radial-gradient(1px 1px at 5% 88%,#fff9,transparent),radial-gradient(1px 1px at 46% 46%,#fff6,transparent)}
+.card>*{position:relative}
+.card h1{font-family:var(--display);font-weight:900;font-size:4.2em;font-style:italic;letter-spacing:.02em;transform:skew(-6deg);
+  background:linear-gradient(#fff6b0 0%,#ffd23f 35%,#ff8a1f 70%,#d6261e 100%);-webkit-background-clip:text;background-clip:text;color:transparent;
+  -webkit-text-stroke:.03em #2a0c3a;filter:drop-shadow(.06em .08em 0 #2a0c3a) drop-shadow(0 0 .3em rgba(255,138,31,.55))}
+.kicker{font-family:var(--mono);color:var(--cyan);letter-spacing:.2em;text-shadow:0 0 8px rgba(78,240,255,.6)}
+.card button#bStart,.card .row button{font-size:1.2em;background:linear-gradient(#ffd23f,#ff8a1f);color:#1a0b22;border-color:#fff3a8;box-shadow:0 0 1em rgba(255,138,31,.6),inset 0 2px 0 rgba(255,255,255,.5)}
+.card .row button:hover{background:linear-gradient(#fff3a8,#ffd23f)}
+
+/* Stationsfenster als Datapad */
+#st,#ov,#cert{background:var(--panel);color:var(--paper);border:.3cqw solid #7e8aa8;border-radius:.4cqw 1.6cqw .4cqw 1.6cqw;box-shadow:0 0 0 .25cqw #0b1020,0 0 2cqw rgba(78,240,255,.35)}
+.st-head{background:linear-gradient(90deg,#1a2238,#28324f 60%,#3a1f5c);color:var(--paper);border-bottom:2px solid var(--cyan)}
+.st-head h2{font-family:var(--display);font-weight:700;letter-spacing:.03em;color:#fff}
+.st-lp{background:var(--brassL);color:#1a0b22;font-family:var(--display);border-radius:.2em .6em;box-shadow:0 0 .6em rgba(255,210,63,.6)}
+.st-left{background:#0a1028;border-right:2px solid var(--line)}
+#stCap{color:#9fb0dd;font-family:var(--mono)}
+.st-right{background:linear-gradient(rgba(78,240,255,.03) 50%,transparent 50%) 0 0/100% 4px,var(--panel);scrollbar-color:var(--cyan) var(--panel)}
+.st-right h3{font-family:var(--display);font-weight:700;color:var(--cyan);letter-spacing:.03em;font-size:1.1em}
+.ctx{background:#1a1735;border:2px dashed var(--mag);color:#f1e6ff}
+.srcnote,.credits{color:#8c9acb}
+.next{font-family:var(--display);font-weight:700;font-size:1em;letter-spacing:.03em;color:#1a0b22;background:linear-gradient(#ffd23f,#ff8a1f);border:2px solid #fff3a8;border-radius:.2em 1em .2em 1em;box-shadow:0 0 .9em rgba(255,138,31,.45)}
+.next:hover,.next:focus-visible{background:linear-gradient(#fff3a8,#ffd23f);color:#1a0b22}
+.next::before{content:"» "}
+.mc{background:var(--panel2);border:2px solid var(--line);border-radius:.3em 1em .3em 1em}
+.nr{color:var(--mag);font-family:var(--mono)}
+.opt{color:var(--paper);background:#0a1028;border:2px solid var(--line);font-family:inherit;font-size:1em;letter-spacing:0;border-radius:.3em;box-shadow:none}
+.opt:hover,.opt:focus-visible{background:#1b1440;color:#fff;border-color:var(--mag);box-shadow:0 0 .6em rgba(255,79,216,.45)}
+.opt.wrong{background:var(--badL);border-color:var(--bad);color:#ffd5db}
+.reveal{background:var(--okL);border:2px solid var(--ok);box-shadow:0 0 .7em rgba(62,224,143,.3)}
+.back{color:#05070f;background:var(--cyan);border:2px solid #c9fbff;font-family:var(--display);box-shadow:0 0 .9em rgba(78,240,255,.5)}
+#certBody input[type=text],#start input[type=text]{background:#0a1028;color:#fff;border-color:var(--cyan);font-family:var(--mono)}
+#certBody .acts button,.st-head .langBtn{color:#1a0b22;background:var(--brassL);border-color:var(--brassL)}
+.reveal .lbl{font-family:var(--display)}
+#gcv{border:.2cqw solid var(--cyan);box-shadow:0 0 .8em rgba(78,240,255,.3)}
+.tabframe{background:#0b1020;box-shadow:0 0 0 .2em #7e8aa8,0 0 1.2em rgba(78,240,255,.35)}
+#simMsg{background:var(--panel2);color:var(--paper);border-color:var(--line);font-family:var(--mono)}
+#simMsg b{color:var(--cyan)}
+#simMsg.bad{background:var(--badL);border-color:var(--bad)}#simMsg.ok{background:var(--okL);border-color:var(--ok)}
+#sim button{box-shadow:none;letter-spacing:0;font-family:inherit;font-size:inherit;border-radius:.4em}
+#sim button:hover{box-shadow:none}
+.chips button{color:var(--paper);background:var(--panel2);border-color:var(--line);font-family:var(--mono);box-shadow:none}
+.chips button.on{background:var(--brassL);color:#111;border-color:var(--brassL)}
+.chips button.done{background:var(--okL);color:var(--ok);border-color:var(--ok)}
+.nr{background:var(--mag);color:#fff;font-family:var(--mono)}
+.ctx b.who{color:var(--mag);font-family:var(--display)}
+.check{background:var(--panel2);border-color:var(--line);color:var(--paper)}
+.check.ok{background:var(--okL);border-color:var(--ok)}
+.simstate{background:#0f2238;border-left-color:var(--cyan)}
+.simstate.ok{background:var(--okL);border-color:var(--ok)}
+.tipbtn{color:var(--paper);background:var(--panel2);border-color:var(--gold,#ffd23f)}
+.tip{background:#1a1735;border-left-color:var(--brassL)}
+.why{background:var(--badL);border-left-color:var(--bad);color:#ffd5db}
+.wait{color:#9fb0dd}
+.fn{background:#0a1028;color:var(--brassL);border-color:var(--brassL);font-family:var(--mono)}
+input[type=text]{background:#0a1028;color:#fff;border-color:var(--cyan);font-family:var(--mono)}
+.names label{color:var(--cyan);font-family:var(--display);font-size:.85em}
+#certCv{border-color:var(--line)}
+.srcnote{color:#9fb0dd}
